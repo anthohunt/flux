@@ -1,0 +1,18 @@
+{
+  "expediteur": "m.ferret@cle-valbourg.example.fr",
+  "date_du_message": "2026-10-09",
+  "nature": "convocation",
+  "reponse_attendue": true,
+  "reference": "LOC-8142-VALB",
+  "echeance": "2026-10-12",
+  "rdv_date": "2026-10-14",
+  "rdv_heure": "16:00",
+  "montant_du_euros": 0,
+  "documents_a_fournir": [
+    "identite",
+    "bulletins",
+    "imposition",
+    "employeur"
+  ],
+  "lien": "https://dossier.cle-valbourg.example.fr/loc-8142"
+}

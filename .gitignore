@@ -1,0 +1,11 @@
+state/
+server.log
+*.bak
+*.bak-*
+__pycache__/
+secrets/
+jalons/
+node_modules/
+tests/.venv/
+.env
+moteurs.json

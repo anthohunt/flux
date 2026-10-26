@@ -1,0 +1,68 @@
+{
+  "date_du_message": "2026-11-06",
+  "evenements": [
+    {
+      "action": "creer",
+      "type": "rendez_vous",
+      "titre": "Test de positionnement — centre d'examens du Parc",
+      "date_debut": "2026-11-12",
+      "heure_debut": "08:30",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "4 rue des Tisserands",
+      "lien": "",
+      "reference": "FORM-2026-1187",
+      "montant_euros": 0,
+      "documents": [
+        "badge",
+        "livret"
+      ],
+      "notes": "accueil du 1er étage un quart d'heure avant ; tenue de ville ; ne pas apporter les anciens relevés de notes"
+    },
+    {
+      "action": "annuler",
+      "type": "rendez_vous",
+      "titre": "Test de positionnement déplacé au 13 novembre (créneau rendu)",
+      "date_debut": "2026-11-13",
+      "heure_debut": "11:15",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "",
+      "reference": "FORM-2026-1187",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": ""
+    },
+    {
+      "action": "annuler",
+      "type": "rendez_vous",
+      "titre": "Entretien de suivi avec M. Aussel (annulé)",
+      "date_debut": "2026-11-19",
+      "heure_debut": "15:00",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "",
+      "reference": "FORM-2026-1187",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": ""
+    },
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Réserver l'entretien de validation sur le portail stagiaire",
+      "date_debut": "2026-12-02",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "https://stagiaires.example-formation.fr/inscription/FORM-2026-1187",
+      "reference": "FORM-2026-1187",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": "au moins 48 h avant la date prévisionnelle d'entrée en formation du 4 décembre ; à l'entretien : tenue de chantier et chaussures de sécurité, curriculum vitae à jour, copie des diplômes"
+    }
+  ]
+}

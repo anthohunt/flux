@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "actions mail — actions.json",
+  "description": "Sortie du noeud « Decider les actions » (moteur api) : un objet {actions: [{verbe, date}]} — le tool_use strict d'Anthropic exige un objet a la racine, et le juge actions.py lit indifferemment une liste ou cet objet. La liste se deduit entierement des onze cases du formulaire : sept verbes possibles, chacun avec son declencheur et sa regle de date. Sous-ensemble commun au tool_use strict d'Anthropic et au `format` d'Ollama : ni pattern, ni minimum/maximum, ni minLength/maxLength, ni $ref externe ; tout objet est ferme. Les contraintes de forme (AAAA-MM-JJ, HH:MM) vivent dans les descriptions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "actions"
+  ],
+  "properties": {
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Les actions a mener, une par item, chacune avec son verbe et sa date. Un verbe au plus une fois ; jamais de liste vide.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "verbe",
+          "date"
+        ],
+        "properties": {
+          "verbe": {
+            "type": "string",
+            "enum": [
+              "repondre",
+              "remplir",
+              "rassembler",
+              "payer",
+              "creer_rdv",
+              "rappel",
+              "classer"
+            ],
+            "description": "Le verbe de l'action. Chacun se declenche a partir des seules cases du formulaire : repondre = `reponse_attendue` vaut true ; remplir = `lien` n'est pas vide ; rassembler = `documents_a_fournir` n'est pas vide ; payer = `montant_du_euros` est superieur a 0 ; creer_rdv = `rdv_date` n'est pas vide ; rappel = `rdv_date` n'est pas vide ; classer = aucun des six autres ne s'applique. Un verbe apparait au plus une fois. La liste n'est jamais vide : quand il n'y a rien a faire, elle vaut le seul `classer`."
+          },
+          "date": {
+            "type": "string",
+            "description": "La date de l'action, au format AAAA-MM-JJ. repondre, remplir et payer : `echeance`, et a defaut `date_du_message`. rassembler : la veille de `rdv_date`, a defaut `echeance`, a defaut `date_du_message`. creer_rdv : `rdv_date`. rappel : la veille de `rdv_date`. classer : `date_du_message`."
+          }
+        }
+      }
+    }
+  }
+}

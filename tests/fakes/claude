@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Un faux `claude` pour les tests du moteur tmux. Il ne parle a aucun modele.
+#
+#   claude --version                 -> la version epinglee dans moteurs.json (ou 2.1.241)
+#   claude "<brief>" --add-dir <ws> … -> lit <ws>/.faux-claude pour savoir quoi jouer :
+#        partiel  : ecrit un livrable PARTIEL puis attend (le test tue la session)
+#        fini     : ecrit le livrable, pose la sentinelle DONE lue dans le brief, sort
+#        mur      : affiche « usage limit reached » a l'ecran et attend
+#        (absent) : partiel
+ICI="$(cd "$(dirname "$0")" && pwd)"
+if [ "${1:-}" = "--version" ]; then
+  M="${FLUX_MOTEURS:-$ICI/../../moteurs.json}"; [ -f "$M" ] || M="$ICI/../../moteurs.example.json"
+  V=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('claude_version') or '2.1.241')" "$M" 2>/dev/null || echo 2.1.241)
+  echo "$V (Claude Code)"; exit 0
+fi
+if [ "${1:-}" = "-p" ]; then
+  # une reponse -p minimale et conforme, pour qui l'appelle sans reseau
+  echo '{"type":"result","is_error":false,"result":"{\"ok\": true}","usage":{"input_tokens":5,"output_tokens":3,"cache_creation_input_tokens":0,"cache_read_input_tokens":0},"total_cost_usd":0.0,"session_id":"faux"}'
+  exit 0
+fi
+BRIEF="${1:-}"; WS=""
+while [ $# -gt 0 ]; do
+  case "$1" in --add-dir) WS="$2"; shift;; esac
+  shift
+done
+MODE="partiel"; [ -n "$WS" ] && [ -f "$WS/.faux-claude" ] && MODE=$(head -1 "$WS/.faux-claude")
+LIVRABLE=$(printf '%s\n' "$BRIEF" | grep -oE '^- `[^`]+`' | head -1 | sed 's/^- `//; s/`$//')
+DONE=$(printf '%s\n' "$BRIEF" | grep -oE 'touch [^` ]+' | head -1 | sed 's/^touch //')
+echo "faux claude · mode $MODE · workspace $WS · livrable $LIVRABLE"
+case "$MODE" in
+  fini)
+    [ -n "$LIVRABLE" ] && { mkdir -p "$WS/$(dirname "$LIVRABLE")"; echo "travail complet" > "$WS/$LIVRABLE"; }
+    echo "livrable ecrit, sentinelle posee"; [ -n "$DONE" ] && touch "$DONE"
+    sleep 3; exit 0;;
+  mur)
+    echo "API Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"usage limit reached\"}}"
+    sleep 600;;
+  *)
+    [ -n "$LIVRABLE" ] && { mkdir -p "$WS/$(dirname "$LIVRABLE")"; echo "travail a moitie" > "$WS/$LIVRABLE.partiel"; }
+    echo "livrable partiel ecrit, j'attends qu'on me tue"
+    sleep 600;;
+esac

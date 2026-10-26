@@ -1,0 +1,150 @@
+{
+  "$schema": "../runtime/workflow.schema.json",
+  "id": "mail",
+  "name": "Mail → formulaire → actions",
+  "description": "Le workflow de référence de flux v2 (design § 4) : deux nœuds api, chacun noté au banc contre le corrigé du cas. Le nœud 1 remplit le formulaire commun de onze cases (jugé sur 22), le nœud 2 en déduit les actions du vocabulaire fermé de sept verbes (jugé sur 14) : 36 points en tout, le même barème pour tous les cas. Sert à comparer un modèle distant et un modèle local, avec et sans découpage.",
+  "workspace_root": "~/mail-runs",
+  "parametres_run": [
+    {
+      "id": "cas",
+      "label": "Cas de banc",
+      "type": "choix",
+      "options_de": "cas",
+      "requis": true,
+      "mode": "banc"
+    },
+    {
+      "id": "modele",
+      "label": "Modèle des nœuds",
+      "type": "choix",
+      "options": [
+        "opus",
+        "sonnet",
+        "ollama:qwen3:4b"
+      ],
+      "defaut": "opus",
+      "requis": true
+    },
+    {
+      "id": "mail",
+      "label": "Le mail à traiter (fichier texte ou markdown)",
+      "type": "fichier",
+      "requis": true,
+      "mode": "production",
+      "destination": "mail.md"
+    }
+  ],
+  "moteurs_autorises": [
+    "api"
+  ],
+  "moteurs_api": [
+    {
+      "id": "anthropic",
+      "type": "anthropic",
+      "modeles": [
+        "opus",
+        "sonnet",
+        "haiku"
+      ]
+    },
+    {
+      "id": "ollama-local",
+      "type": "ollama",
+      "url": "http://127.0.0.1:11434",
+      "modeles": [
+        "qwen3:4b"
+      ]
+    }
+  ],
+  "garde": {
+    "toutes_les_min": 5,
+    "modele": "haiku",
+    "relances_max": 2
+  },
+  "nodes": [
+    {
+      "id": "remplir",
+      "n": 1,
+      "name": "Remplir le formulaire",
+      "moteur": "api",
+      "modele": "{modele}",
+      "entree": [
+        "mail.md"
+      ],
+      "consignes": [
+        "Tu reçois un fil de mails dans `mail.md`, le message le plus récent en bas. Tu remplis le formulaire commun de onze cases, case par case, uniquement avec ce que le fil dit : rien d'inventé, rien de déduit d'une connaissance extérieure au fil. Quand un message plus récent corrige un plus ancien — date, heure, lieu, montant, décision — c'est le plus récent qui compte, et l'ancienne valeur n'apparaît nulle part.",
+        "L'absence est une valeur, jamais une clé manquante et jamais `null` : une information que le fil ne donne pas s'écrit chaîne vide `\"\"` pour un texte, `0` pour le montant, liste vide `[]` pour les documents. Les onze clés sont donc toujours présentes, même quand la moitié du formulaire est vide. S'abstenir à raison rapporte autant que remplir à raison ; inventer coûte des points.",
+        "Formats, sans exception : les dates en AAAA-MM-JJ (année sur 4 chiffres, mois et jour sur 2), et une date relative (« sous huit jours », « la semaine prochaine ») se calcule depuis `date_du_message` ; l'heure en HH:MM sur 24 heures et deux chiffres (08:45, 14:00) ; le montant en nombre, point décimal, sans symbole ni espace (1240.5).",
+        "Les onze cases, une à une :\n- `expediteur` : l'adresse e-mail de qui a envoyé le message le plus récent du fil. Jamais vide.\n- `date_du_message` : la date de ce message le plus récent. C'est l'ancre de toutes les dates relatives. Jamais vide.\n- `nature` : une valeur parmi `convocation`, `demande_de_paiement`, `demande_de_document`, `proposition`, `decision`, `information`. L'ORDRE DE CETTE LISTE EST LA RÈGLE D'ARBITRAGE : la première valeur qui s'applique gagne, donc un rendez-vous où vous devez vous rendre et qui réclame aussi de l'argent est une `convocation`. convocation = LE DESTINATAIRE doit SE RENDRE à un rendez-vous qui n'est pas chez lui, en un lieu tiers ou à une réunion à distance qu'il doit rejoindre ; un rendez-vous qui se tient CHEZ LE DESTINATAIRE (intervention à domicile, livraison, visite d'un artisan ou d'un expert) ou auquel il n'a pas à assister lui-même n'est PAS une convocation, même quand le fil exige sa présence, même daté et horodaté, même quand il remplit `rdv_date` et `rdv_heure` — un tel fil qui réclame en plus une somme est une `demande_de_paiement` ; demande_de_paiement = on vous réclame une somme ; demande_de_document = on vous réclame une pièce ; proposition = on vous soumet un choix, une offre ou un devis ; decision = on vous notifie une décision déjà prise ; information = fourre-tout, rien à faire. Jamais vide.\n- `reponse_attendue` : `true` si le fil attend une réponse écrite à son expéditeur (confirmation, accord, choix, envoi d'une information), `false` sinon. `false` est une réponse à part entière, pas une abstention.\n- `reference` : le numéro que le mail donne à l'affaire (dossier, devis, sinistre, commande, convocation), recopié tel quel. `\"\"` si le fil n'en donne aucun ; n'en fabrique jamais un depuis une adresse, un objet ou une date.\n- `echeance` : la date limite LA PLUS PROCHE, toutes obligations confondues — répondre, payer, envoyer une pièce, s'inscrire. Ce n'est pas la date du rendez-vous, qui a sa propre case. `\"\"` si le fil ne pose aucune limite.\n- `rdv_date` : la date du rendez-vous dans sa version la plus récente ; un report la remplace, une annulation sans remplacement la vide. `\"\"` s'il n'y a pas de rendez-vous.\n- `rdv_heure` : l'heure de ce rendez-vous. `\"\"` si le fil n'en donne pas, ou si le rendez-vous est annulé.\n- `montant_du_euros` : la somme DUE par le destinataire. `0` si rien n'est dû, y compris quand le fil cite des montants qui ne sont pas à payer : total déjà réglé, prix affiché, devis refusé, base de remboursement.\n- `documents_a_fournir` : les pièces à apporter, joindre ou renvoyer, une par item, dans les mots du mail. `[]` si le fil n'en réclame aucune. N'y mets ni ce que le mail interdit d'apporter, ni ce qu'il fournit lui-même.\n- `lien` : l'adresse à ouvrir pour AGIR (formulaire à remplir, paiement en ligne, confirmation, prise de rendez-vous), recopiée telle quelle. `\"\"` si le fil n'en porte aucune, ou si les seules adresses citées sont documentaires : site institutionnel, page d'information, désabonnement.",
+        "Rends exactement ces onze clés, et aucune autre. Les actions ne sont pas ton livrable : elles se décident à l'étape suivante, à partir du formulaire que tu rends ici."
+      ],
+      "schema": "workflows/mail/formulaire.schema.json",
+      "livrables": [
+        "resultat.json"
+      ],
+      "juge": {
+        "script": "runtime/juges/formulaire.py",
+        "corrige": "golden-formulaire.json",
+        "bareme": 22
+      },
+      "relances_max": 2,
+      "suivant": [
+        "decider"
+      ]
+    },
+    {
+      "id": "decider",
+      "n": 2,
+      "name": "Décider les actions",
+      "moteur": "api",
+      "modele": "{modele}",
+      "entree": [
+        "resultat.json"
+      ],
+      "consignes": [
+        "Tu reçois `resultat.json` : le formulaire commun de onze cases, rempli depuis un fil de mails. Tu en déduis la liste des actions à mener. Cette liste est une fonction des SEULES cases du formulaire : tu ne lis rien d'autre, tu ne rouvres pas le mail, et tu ne juges ni l'urgence ni l'importance.",
+        "Le vocabulaire des actions est FERMÉ — sept verbes, pas un de plus, chacun avec son déclencheur et sa règle de date, tous deux lus dans les seules cases du formulaire :\n- `repondre` : si `reponse_attendue` vaut true. Date : `echeance`, à défaut `date_du_message`.\n- `remplir` : si `lien` n'est pas vide. Date : `echeance`, à défaut `date_du_message`.\n- `rassembler` : si `documents_a_fournir` n'est pas vide. Date : la veille de `rdv_date`, à défaut `echeance`, à défaut `date_du_message`.\n- `payer` : si `montant_du_euros` est strictement supérieur à 0. Date : `echeance`, à défaut `date_du_message`.\n- `creer_rdv` : si `rdv_date` n'est pas vide. Date : `rdv_date`.\n- `rappel` : si `rdv_date` n'est pas vide. Date : la veille de `rdv_date`.\n- `classer` : si aucun des six autres ne se déclenche. Date : `date_du_message`.",
+        "Chaque verbe qui se déclenche donne une action, et une seule : jamais deux fois le même verbe. Un verbe dont le déclencheur est faux n'apparaît pas, et un verbe hors des sept coûte des points. La liste n'est jamais vide : quand aucun des six premiers ne se déclenche, elle vaut le seul `classer`.",
+        "Rends `{\"actions\": [{\"verbe\": ..., \"date\": \"AAAA-MM-JJ\"}, ...]}`, dans l'ordre croissant des dates."
+      ],
+      "schema": "workflows/mail/actions.schema.json",
+      "livrables": [
+        "actions.json"
+      ],
+      "juge": {
+        "script": "runtime/juges/actions.py",
+        "corrige": "golden-actions.json",
+        "bareme": 14
+      },
+      "relances_max": 2,
+      "suivant": []
+    }
+  ],
+  "test": {
+    "suite": [
+      {
+        "titre": "Opus, en un appel",
+        "workflow": "mail-1noeud",
+        "modele": "opus"
+      },
+      {
+        "titre": "qwen3:4b, en un appel",
+        "workflow": "mail-1noeud",
+        "modele": "ollama:qwen3:4b"
+      },
+      {
+        "titre": "workflow, Opus",
+        "workflow": "mail",
+        "modele": "opus"
+      },
+      {
+        "titre": "workflow, qwen3:4b",
+        "workflow": "mail",
+        "modele": "ollama:qwen3:4b"
+      }
+    ]
+  },
+  "orchestrateur": {
+    "modele": "sonnet"
+  }
+}

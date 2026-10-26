@@ -1,0 +1,114 @@
+{
+  "$schema": "../runtime/workflow.schema.json",
+  "id": "agenda",
+  "name": "Mail → événements d'agenda",
+  "description": "Le workflow de production de flux : un seul nœud api qui lit un fil de mails et rend les événements à poser dans l'agenda du destinataire (rendez-vous, échéances, périodes, annulations), dans l'état final du fil. Au banc, jugé sur 72 points fixes (4 emplacements × 9 cases × 2) contre golden-evenements.json. En production, le programme autonome (mail-agenda) joue ce même nœud sur un modèle local et pousse les événements dans Google Calendar.",
+  "workspace_root": "~/agenda-runs",
+  "parametres_run": [
+    {
+      "id": "cas",
+      "label": "Cas de banc",
+      "type": "choix",
+      "options_de": "cas",
+      "requis": true,
+      "mode": "banc"
+    },
+    {
+      "id": "modele",
+      "label": "Modèle du nœud",
+      "type": "choix",
+      "options": [
+        "opus",
+        "sonnet",
+        "ollama:qwen3:4b"
+      ],
+      "defaut": "opus",
+      "requis": true
+    },
+    {
+      "id": "mail",
+      "label": "Le fil de mails à traiter (texte ou markdown, le plus récent en bas)",
+      "type": "fichier",
+      "requis": true,
+      "mode": "production",
+      "destination": "mail.md"
+    }
+  ],
+  "moteurs_autorises": [
+    "api"
+  ],
+  "moteurs_api": [
+    {
+      "id": "anthropic",
+      "type": "anthropic",
+      "modeles": [
+        "opus",
+        "sonnet",
+        "haiku"
+      ]
+    },
+    {
+      "id": "ollama-local",
+      "type": "ollama",
+      "url": "http://127.0.0.1:11434",
+      "modeles": [
+        "qwen3:4b"
+      ]
+    }
+  ],
+  "garde": {
+    "toutes_les_min": 5,
+    "modele": "haiku",
+    "relances_max": 2
+  },
+  "nodes": [
+    {
+      "id": "evenements",
+      "n": 1,
+      "name": "Extraire les événements d'agenda",
+      "moteur": "api",
+      "modele": "{modele}",
+      "entree": [
+        "mail.md"
+      ],
+      "consignes": [
+        "Tu reçois un fil de mails dans `mail.md`, le message le plus récent en bas. Tu rends la liste des événements à poser dans l'agenda du destinataire, dans l'ÉTAT FINAL du fil : quand un message plus récent corrige un plus ancien — date, heure, lieu, montant, décision — c'est le plus récent qui compte et l'ancienne valeur n'apparaît nulle part. Tu n'écris que ce que le fil dit : rien d'inventé, rien de déduit d'une connaissance extérieure. `date_du_message` est la date du message le plus récent ; c'est l'ancre de toutes les dates relatives.",
+        "Ce qui devient un événement, et rien d'autre :\n- `rendez_vous` : le destinataire doit être quelque part à une heure donnée — dans un lieu tiers (bureau, salle, cabinet, clinique, collège), en visioconférence, ou chez lui quand quelqu'un vient (artisan, expert, livraison). `heure_debut` est obligatoire. `heure_fin` = l'heure de fin quand le mail la donne, ou heure_debut + la durée annoncée ; vide sinon.\n- `echeance` : une date avant laquelle le destinataire doit FAIRE quelque chose — répondre, confirmer, payer, envoyer une pièce, déposer un dossier, s'inscrire, réserver — ou une date à laquelle quelque chose expire pour lui (fin de validité d'un devis, fin d'une offre). Journée entière (`heure_debut` vide) sauf quand le mail nomme une heure limite.\n- `periode` : plusieurs jours d'affilée qui concernent le destinataire — séjour, chantier ou travaux chez lui ou dans son immeuble, traitement médical à suivre (« arrêter tel médicament à partir du 18 »). `date_fin` obligatoire ; un traitement qui prépare une intervention court jusqu'à cette intervention.\n- `annuler` : le fil dit EXPLICITEMENT qu'un rendez-vous, une séance, un créneau ou une date limite est annulé(e) ou n'a plus d'objet (« la séance du 27 est annulée », « le point du 15 n'a plus d'objet, je ne le reprogramme pas », « le déplacement annoncé est annulé, le créneau du 13 a été rendu ») — qu'un autre événement le remplace ou non. L'événement porte `action: \"annuler\"`, son type, sa date et son heure d'ORIGINE, sa référence, et rien d'autre (lieu, lien, documents, montant vides) : il sert à retirer de l'agenda ce qui a pu y être posé depuis un message précédent. Un simple déplacement (« votre rendez-vous est déplacé au », « je dois modifier notre horaire », « nous restons sur le 14 à 16h ») n'est PAS une annulation : un seul `creer` à la nouvelle date, rien pour l'ancienne.",
+        "Ce qui ne devient PAS un événement :\n- un rendez-vous déplacé sans le mot « annulé » : un seul événement `creer`, à la nouvelle date — jamais l'ancienne, et pas d'`annuler` pour l'ancienne ;\n- un chantier ou une intervention dont le fil donne le début et une durée (« douze jours de chantier ») sans date de fin explicite : un `rendez_vous` au début, la durée dans `notes` — une `periode` exige une date de fin écrite ;\n- une option envisagée puis écartée dans le fil (« j'avais regardé le 15, oubliez cette option ») ;\n- ce que le fil dit explicitement de ne pas noter (« ne bloquez rien dans votre agenda », « la convocation officielle fera foi », « cette date ne vous est pas opposable », « à titre indicatif ») ;\n- une action conditionnée à une condition non remplie (« si l'IRM montre X, alors… ») ;\n- un rendez-vous dont la date n'est pas encore fixée (« sera fixé le jour de votre sortie », « courant octobre ») ;\n- un prélèvement ou une routine déjà en place qui ne change pas ;\n- les absences, congés, fermetures et horaires de l'EXPÉDITEUR ou de son service : ils ne vont pas dans l'agenda du destinataire ;\n- une obligation sans date propre : elle se rattache, dans `notes`, à l'événement qui la porte (« confirmer sa présence par retour de mail » va dans les notes du rendez-vous s'il n'y a pas de date limite ; « faire livrer le carrelage avant l'arrivée de l'équipe » va dans les notes du chantier).",
+        "Les dates et les heures :\n- `date_debut` d'une échéance = la date que le mail NOMME (« avant le 13 » → le 13, « au plus tard le 2 » → le 2, « sous dix jours ouvrés » → la date calculée depuis l'ancre en excluant week-ends et jours fériés cités). Jamais recalculée d'un jour.\n- Deux obligations à la même date = UN seul événement `echeance` qui les liste dans le titre et les notes. Deux dates différentes = deux événements, même pour la même affaire.\n- Une date limite qui a été repoussée : seule la nouvelle compte. Quand deux services se contredisent, c'est la phrase de préséance du fil qui tranche (« c'est la date que je vous donne ici qui fait foi », « le délai indiqué par l'agence comptable prévaut »).\n- Toute heure en heure de Paris : « 9h00 heure de Montréal (UTC-5), Paris UTC+1 » → `15:00` ; l'heure de Bruxelles est celle de Paris.\n- Format : AAAA-MM-JJ et HH:MM sur 24 h, deux chiffres (08:45, 14:00) ; « quatorze heures trente » → 14:30 ; « 16h » → 16:00.",
+        "Les autres cases, événement par événement :\n- `titre` : court, lisible dans un agenda, dit ce qui se passe et avec qui ; un événement annulé porte « (annulé) ».\n- `lieu` : dans les mots du mail — l'adresse ou la salle ; « visioconférence » pour une réunion à distance ; « domicile » quand quelqu'un vient chez le destinataire ; vide pour une échéance en ligne ou par mail.\n- `lien` : l'adresse à ouvrir pour AGIR sur cet événement (formulaire, dépôt de pièces, paiement, réservation, portail), recopiée telle quelle ; vide si les seules adresses sont documentaires (site, plan d'accès, politique de données). Un lien de réunion qui « parviendra la veille » n'existe pas encore : `lien` vide, et la précision dans `notes`.\n- `reference` : le numéro que le mail donne à l'AFFAIRE — celui de l'objet, celui qu'on vous demande de rappeler dans vos échanges — tel quel, sans le mot qui l'introduit (« Réf. : CGI-2026-047 » → `CGI-2026-047`). La même référence sur tous les événements de l'affaire, même quand un message cite un numéro secondaire (dossier d'expertise, numéro de sinistre d'un tiers, avenant) : celui-là va dans `notes`. Une référence déclarée close est remplacée par la nouvelle. Vide si le fil n'en donne aucune : n'en fabrique jamais depuis un modèle, un SIRET ou un numéro de client.\n- `montant_euros` : la somme à payer À CETTE échéance, calculée si le mail ne donne que le taux (« acompte de 30 % du montant TTC » → 0,30 × TTC), ou la différence si le mail donne le total et la part prise en charge. `0` partout ailleurs, y compris pour un rendez-vous, un total déjà réglé, un prix affiché, une franchise déduite d'une indemnité, un engagement budgétaire sans date de paiement.\n- `documents` : les pièces à apporter, joindre ou renvoyer POUR CET événement, une par item, dans les mots du mail. Vide si rien n'est demandé. Ni ce que le mail interdit d'apporter, ni ce qu'il fournit lui-même, ni ce qui n'est plus demandé (« l'attestation ne vous est pas demandée »). Les pièces d'une consultation qui n'a pas encore de date vont dans `notes` de l'échéance qui la réserve, pas dans `documents`.\n- `notes` : ce qu'on veut relire dans l'agenda — consignes (à jeun, arriver 15 min avant, originaux exigés), code d'accès, ordre du jour, IBAN, ce qui se rattache à l'événement sans date propre. Vide s'il n'y a rien.",
+        "L'absence est une valeur, jamais une clé manquante et jamais `null` : chaîne vide `\"\"`, `0`, liste vide `[]`. Toutes les clés de chaque événement sont toujours présentes. S'abstenir à raison rapporte autant que remplir à raison ; inventer coûte des points. Rends les événements dans l'ordre chronologique (`date_debut`, puis `heure_debut`), et exactement les clés du schéma, aucune autre."
+      ],
+      "schema": "workflows/agenda/evenements.schema.json",
+      "livrables": [
+        "evenements.json"
+      ],
+      "juge": {
+        "script": "runtime/juges/evenements.py",
+        "corrige": "golden-evenements.json",
+        "bareme": 72
+      },
+      "relances_max": 2,
+      "suivant": []
+    }
+  ],
+  "test": {
+    "suite": [
+      {
+        "titre": "Opus",
+        "workflow": "agenda",
+        "modele": "opus"
+      },
+      {
+        "titre": "qwen3:4b",
+        "workflow": "agenda",
+        "modele": "ollama:qwen3:4b"
+      }
+    ]
+  },
+  "orchestrateur": {
+    "modele": "sonnet"
+  },
+  "cible": 68.3,
+  "version": "v2"
+}

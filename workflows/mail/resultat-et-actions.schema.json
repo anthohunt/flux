@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "formulaire + actions en un appel — resultat.json et actions.json",
+  "description": "Sortie du workflow mail-1noeud : un seul appel rend le formulaire rempli ET la liste des actions. Le noeud declare deux livrables ; par convention du moteur api, chaque cle de premier niveau porte le nom d'un livrable sans son extension et s'ecrit dans ce fichier : `resultat` -> resultat.json, `actions` -> actions.json. Les onze cases sont toutes obligatoires et l'absence est une VALEUR, jamais une cle manquante ni un null : chaine vide pour un texte, 0 pour le montant, liste vide pour les documents, false pour le booleen. S'abstenir a raison rapporte autant que remplir a raison ; inventer coute des points. Sous-ensemble commun au tool_use strict d'Anthropic et au `format` d'Ollama : ni pattern, ni minimum/maximum, ni minLength/maxLength, ni $ref externe ; tout objet est ferme. Les contraintes de forme (AAAA-MM-JJ, HH:MM) vivent dans les descriptions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "resultat",
+    "actions"
+  ],
+  "properties": {
+    "resultat": {
+      "description": "Le formulaire commun de onze cases (contenu de resultat.json).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expediteur",
+        "date_du_message",
+        "nature",
+        "reponse_attendue",
+        "reference",
+        "echeance",
+        "rdv_date",
+        "rdv_heure",
+        "montant_du_euros",
+        "documents_a_fournir",
+        "lien"
+      ],
+      "properties": {
+        "expediteur": {
+          "type": "string",
+          "description": "Adresse e-mail de la personne qui a envoye le message LE PLUS RECENT du fil. Jamais vide : un fil a toujours un dernier emetteur."
+        },
+        "date_du_message": {
+          "type": "string",
+          "description": "Date du message le plus recent du fil, au format AAAA-MM-JJ. C'est l'ancre de toutes les dates relatives (« sous huit jours », « la semaine prochaine »). Jamais vide."
+        },
+        "nature": {
+          "type": "string",
+          "enum": [
+            "convocation",
+            "demande_de_paiement",
+            "demande_de_document",
+            "proposition",
+            "decision",
+            "information"
+          ],
+          "description": "Ce que le fil demande, en un mot. L'ORDRE DE CETTE LISTE EST LA REGLE D'ARBITRAGE : la premiere valeur qui s'applique gagne. Un rappel de rendez-vous ou vous devez vous rendre et qui reclame aussi de l'argent est donc `convocation`, pas `demande_de_paiement`. convocation = LE DESTINATAIRE doit SE RENDRE a un rendez-vous qui n'est pas chez lui, en un lieu tiers ou a une reunion a distance qu'il doit rejoindre ; un rendez-vous qui se tient CHEZ LE DESTINATAIRE (intervention a domicile, livraison, visite d'un artisan ou d'un expert) ou auquel il n'a pas a assister lui-meme n'est PAS une convocation, meme quand le fil exige sa presence, meme date et horodate, meme quand il remplit `rdv_date` et `rdv_heure` - un tel fil qui reclame en plus une somme est une `demande_de_paiement` ; demande_de_paiement = on vous reclame une somme ; demande_de_document = on vous reclame une piece ; proposition = on vous soumet un choix, une offre ou un devis ; decision = on vous notifie une decision deja prise ; information = fourre-tout, rien a faire. Jamais vide."
+        },
+        "reponse_attendue": {
+          "type": "boolean",
+          "description": "true si le fil attend une reponse ecrite a son expediteur (confirmation, accord, choix, envoi d'une information), false sinon. `false` est une reponse a part entiere, pas une abstention."
+        },
+        "reference": {
+          "type": "string",
+          "description": "Le numero que le mail donne a l'affaire (dossier, devis, sinistre, commande, convocation...), recopie tel quel. Chaine vide si le fil n'en donne aucun. N'en inventez jamais un a partir d'un fragment d'adresse, d'un objet ou d'une date."
+        },
+        "echeance": {
+          "type": "string",
+          "description": "La date limite LA PLUS PROCHE, toutes obligations confondues : repondre, payer, envoyer une piece, s'inscrire. Contrainte de forme : AAAA-MM-JJ (annee sur 4 chiffres, mois et jour sur 2). Chaine vide si l'information n'existe pas dans le fil. Ce n'est pas la date du rendez-vous, qui a sa propre case."
+        },
+        "rdv_date": {
+          "type": "string",
+          "description": "Date du rendez-vous dans sa version la plus recente : si un message posterieur le deplace, c'est la nouvelle date qui compte ; s'il l'annule sans le remplacer, la case redevient vide. Contrainte de forme : AAAA-MM-JJ (annee sur 4 chiffres, mois et jour sur 2). Chaine vide si l'information n'existe pas dans le fil."
+        },
+        "rdv_heure": {
+          "type": "string",
+          "description": "Heure du rendez-vous, au format HH:MM sur 24 heures et deux chiffres (08:45, 14:00). « quatorze heures trente » s'ecrit 14:30. Chaine vide si le fil ne donne pas d'heure, ou si le rendez-vous a ete annule."
+        },
+        "montant_du_euros": {
+          "type": "number",
+          "description": "La somme DUE par le destinataire, en euros, en nombre : point decimal, pas de symbole ni d'espace (1240.5). 0 si rien n'est du, y compris quand le fil cite des montants qui ne sont pas a payer (total deja regle, prix affiche, devis refuse, base de remboursement)."
+        },
+        "documents_a_fournir": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Les pieces a apporter, joindre ou renvoyer, une par item, dans les mots du mail. Liste vide si le fil n'en reclame aucune. N'y mettez jamais ce que le mail interdit d'apporter, ni ce qu'il fournit lui-meme."
+        },
+        "lien": {
+          "type": "string",
+          "description": "L'adresse a ouvrir pour AGIR (formulaire a remplir, paiement en ligne, confirmation, prise de rendez-vous), recopiee telle quelle. Chaine vide si le fil n'en porte aucune, ou si les seules adresses citees sont documentaires : site institutionnel, page d'information, lien de desabonnement."
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "description": "La liste finale des actions a mener (contenu de actions.json), chacune avec son verbe et sa date. Elle se deduit entierement des onze cases de `resultat`.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "verbe",
+          "date"
+        ],
+        "properties": {
+          "verbe": {
+            "type": "string",
+            "enum": [
+              "repondre",
+              "remplir",
+              "rassembler",
+              "payer",
+              "creer_rdv",
+              "rappel",
+              "classer"
+            ],
+            "description": "Le verbe de l'action. Chacun se declenche a partir des seules cases du formulaire : repondre = `reponse_attendue` vaut true ; remplir = `lien` n'est pas vide ; rassembler = `documents_a_fournir` n'est pas vide ; payer = `montant_du_euros` est superieur a 0 ; creer_rdv = `rdv_date` n'est pas vide ; rappel = `rdv_date` n'est pas vide ; classer = aucun des six autres ne s'applique. Un verbe apparait au plus une fois. La liste n'est jamais vide : quand il n'y a rien a faire, elle vaut le seul `classer`."
+          },
+          "date": {
+            "type": "string",
+            "description": "La date de l'action, au format AAAA-MM-JJ. repondre, remplir et payer : `echeance`, et a defaut `date_du_message`. rassembler : la veille de `rdv_date`, a defaut `echeance`, a defaut `date_du_message`. creer_rdv : `rdv_date`. rappel : la veille de `rdv_date`. classer : `date_du_message`."
+          }
+        }
+      }
+    }
+  }
+}

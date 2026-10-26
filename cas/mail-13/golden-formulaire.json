@@ -1,0 +1,16 @@
+{
+  "expediteur": "c.rieux@clg-bellevue.example.fr",
+  "date_du_message": "2026-11-12",
+  "nature": "convocation",
+  "reponse_attendue": true,
+  "reference": "RPP-2026-0471",
+  "echeance": "2026-11-14",
+  "rdv_date": "2026-11-21",
+  "rdv_heure": "09:20",
+  "montant_du_euros": 0,
+  "documents_a_fournir": [
+    "carnet",
+    "releve"
+  ],
+  "lien": "https://portail.clg-bellevue.example.fr/rencontres"
+}

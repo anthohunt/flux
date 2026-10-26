@@ -1,0 +1,35 @@
+{
+  "date_du_message": "2026-10-02",
+  "evenements": [
+    {
+      "action": "creer",
+      "type": "rendez_vous",
+      "titre": "Intervention du technicien fibre à domicile",
+      "date_debut": "2026-10-08",
+      "heure_debut": "13:00",
+      "date_fin": "",
+      "heure_fin": "17:00",
+      "lieu": "domicile",
+      "lien": "",
+      "reference": "FB-2026-551209",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": "présence d'une personne majeure obligatoire ; dégager l'accès au point de branchement et à l'emplacement de la prise ; intervention d'environ deux heures ; la nouvelle box est remise sur place"
+    },
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Retourner l'ancienne box ADSL",
+      "date_debut": "2026-10-31",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "https://espace.example-fibre.fr/retour-equipement",
+      "reference": "FB-2026-551209",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": "ancienne box ADSL à renvoyer ; étiquette de retour prépayée à imprimer depuis l'espace client ; 59 € facturés si non restituée"
+    }
+  ]
+}

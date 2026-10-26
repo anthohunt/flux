@@ -1,0 +1,44 @@
+{
+  "$schema": "../runtime/workflow.schema.json",
+  "id": "exemple-agent",
+  "name": "Exemple — une note de synthèse écrite par un agent",
+  "description": "Graphe d'exemple du moteur tmux : un agent Claude Code lit un sujet (`sujet.md`) et rédige une note de synthèse (`note.md`). Un validateur vérifie la forme de la note avant que la run ne se termine. Sert de modèle pour écrire une pipeline d'agents.",
+  "workspace_root": "~/exemple-agent-runs",
+  "parametres_run": [
+    {
+      "id": "sujet",
+      "label": "Le sujet à synthétiser (texte ou markdown)",
+      "type": "fichier",
+      "requis": true,
+      "mode": "production",
+      "destination": "sujet.md"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "rediger",
+      "n": 1,
+      "type": "agent",
+      "moteur": "tmux",
+      "name": "Rédiger la note",
+      "modele": "sonnet",
+      "entree": ["sujet.md"],
+      "objectif": "Lire `sujet.md` et écrire `note.md` : un titre de niveau 1, puis trois sections de niveau 2 — « Ce qu'il faut retenir », « Les points ouverts », « La suite proposée ». Une idée par phrase, aucun fait qui ne soit pas dans le sujet.",
+      "tools": ["Read", "Write", "Edit", "Bash", "Glob", "Grep"],
+      "taches": [
+        "Lire le sujet en entier",
+        "Écrire la note dans le format demandé",
+        "Lancer le validateur et corriger jusqu'au vert"
+      ],
+      "taches_detail": [
+        {"titre": "Lire le sujet en entier", "par": "l'agent", "detail": "`sujet.md`, du début à la fin, avant d'écrire quoi que ce soit."},
+        {"titre": "Écrire la note dans le format demandé", "par": "l'agent", "detail": "`note.md` : un titre `# …`, puis les trois sections `## Ce qu'il faut retenir`, `## Les points ouverts`, `## La suite proposée`, chacune non vide."},
+        {"titre": "Lancer le validateur et corriger jusqu'au vert", "par": "l'agent", "detail": "La commande est donnée plus bas dans ce brief."}
+      ],
+      "livrables": ["note.md"],
+      "juge": {"type": "presence"},
+      "gate": {"validateur": "exemple-agent-rediger"},
+      "suivant": []
+    }
+  ]
+}

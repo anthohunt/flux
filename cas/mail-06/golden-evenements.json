@@ -1,0 +1,55 @@
+{
+  "date_du_message": "2026-10-09",
+  "evenements": [
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Accuser réception de la visite du T3 (agence Clé de Valbourg)",
+      "date_debut": "2026-10-12",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "",
+      "reference": "LOC-8142-VALB",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": "par retour de mail à Myriam Ferret"
+    },
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Compléter le dossier locataire en ligne",
+      "date_debut": "2026-10-13",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "https://dossier.cle-valbourg.example.fr/loc-8142",
+      "reference": "LOC-8142-VALB",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": ""
+    },
+    {
+      "action": "creer",
+      "type": "rendez_vous",
+      "titre": "Visite T3 — 8 rue des Peupliers",
+      "date_debut": "2026-10-14",
+      "heure_debut": "16:00",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "8 rue des Peupliers",
+      "lien": "",
+      "reference": "LOC-8142-VALB",
+      "montant_euros": 0,
+      "documents": [
+        "identite",
+        "bulletins",
+        "imposition",
+        "employeur"
+      ],
+      "notes": "rendez-vous devant l'immeuble, 2e étage porte de droite ; pièces scannées sur place"
+    }
+  ]
+}

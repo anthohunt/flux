@@ -1,0 +1,18 @@
+{
+  "expediteur": "accueil.urbanisme@example-valbourg.fr",
+  "date_du_message": "2026-09-10",
+  "nature": "convocation",
+  "reponse_attendue": true,
+  "reference": "",
+  "echeance": "2026-09-12",
+  "rdv_date": "2026-09-24",
+  "rdv_heure": "08:45",
+  "montant_du_euros": 0,
+  "documents_a_fournir": [
+    "plan",
+    "photos",
+    "titre",
+    "devis"
+  ],
+  "lien": "https://urbanisme.example-valbourg.fr/q/7H2K-VALB"
+}

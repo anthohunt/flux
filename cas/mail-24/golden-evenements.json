@@ -1,0 +1,70 @@
+{
+  "date_du_message": "2026-10-08",
+  "evenements": [
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Télé-inscription de Noé au collège Honoré-de-Balzac",
+      "date_debut": "2026-10-19",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "https://teleinscription.example-ac-valbourg.fr/2026/balzac",
+      "reference": "AFF-99-2026-4417",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": "au plus tard le 19/10 à minuit"
+    },
+    {
+      "action": "creer",
+      "type": "rendez_vous",
+      "titre": "Séance d'inscription de Noé — collège Honoré-de-Balzac",
+      "date_debut": "2026-10-22",
+      "heure_debut": "14:30",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "3 boulevard des Platanes",
+      "lien": "",
+      "reference": "AFF-99-2026-4417",
+      "montant_euros": 0,
+      "documents": [
+        "livret",
+        "domicile",
+        "radiation",
+        "assurance"
+      ],
+      "notes": "originaux exigés, en présence d'un responsable légal ; la fiche de liaison n'est pas demandée"
+    },
+    {
+      "action": "annuler",
+      "type": "echeance",
+      "titre": "Télé-inscription au collège Bellevue (annulée)",
+      "date_debut": "2026-10-26",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "",
+      "reference": "AFF-99-2026-3902",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": ""
+    },
+    {
+      "action": "annuler",
+      "type": "rendez_vous",
+      "titre": "Séance d'inscription au collège Bellevue (annulée)",
+      "date_debut": "2026-10-27",
+      "heure_debut": "09:00",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "",
+      "reference": "AFF-99-2026-3902",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": ""
+    }
+  ]
+}

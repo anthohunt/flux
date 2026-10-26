@@ -1,0 +1,20 @@
+{
+  "date_du_message": "2026-10-05",
+  "evenements": [
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Déclaration URSSAF du 3e trimestre 2026 et paiement",
+      "date_debut": "2026-10-31",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "https://mon-compte.example-urssaf.fr/declarer",
+      "reference": "810 2604 471 9",
+      "montant_euros": 1202.75,
+      "documents": [],
+      "notes": "chiffre d'affaires 4 250,00 € ; cotisations 26,10 % + versement libératoire 2,20 % (BNC) ; pénalité 58 € hors délai"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "expediteur": "secretariat.logistique@example-valtec.fr",
+  "date_du_message": "2026-09-28",
+  "nature": "convocation",
+  "reponse_attendue": true,
+  "reference": "LOG-2026-047",
+  "echeance": "2026-10-02",
+  "rdv_date": "2026-10-06",
+  "rdv_heure": "14:00",
+  "montant_du_euros": 0,
+  "documents_a_fournir": [
+    "bilan d'activité"
+  ],
+  "lien": ""
+}

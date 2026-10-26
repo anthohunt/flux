@@ -1,0 +1,46 @@
+{
+  "id": "mail-demo",
+  "name": "Traiter un mail (démo console)",
+  "description": "Graphe de DEMONSTRATION pour la console v2 (T7/T8) : deux noeuds api notes, un moteur Ollama distant declare, une ouverture qui demande le cas de banc. Il n'est pas joue : tests/tools/demo-mail.py le copie dans workflows/ le temps d'une capture, avec des runs et des passes v2 fabriquees a la main, puis le retire. Le vrai use case est workflows/mail.json (T4/T11).",
+  "workspace_root": "~/mail-demo-runs",
+  "moteurs_autorises": ["api"],
+  "moteurs_api": [
+    { "id": "ollama-local", "nom": "Ollama local", "type": "ollama", "url": "http://127.0.0.1:11434", "modele": "qwen3:4b" },
+    { "id": "anthropic", "nom": "Anthropic", "type": "anthropic", "modele": "opus" }
+  ],
+  "ouverture": {
+    "titre": "Ouvrir une run — traiter un mail",
+    "slug": "mail-{cas}",
+    "entete": "cas: {cas}\ntimestamp: {stamp}\nbase: {base}\ncreated_at: {iso}\n",
+    "champs": [
+      { "cle": "cas", "libelle": "Cas de banc", "options_de": "cas" },
+      { "cle": "note", "libelle": "Note (facultatif)", "requis": false }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "formulaire", "n": 1, "type": "agent", "name": "Remplir le formulaire",
+      "moteur": "api", "modele": "ollama:qwen3:4b",
+      "objectif": "Lire le fil de mails et remplir le formulaire structuré (dates, heures, documents, actions).",
+      "taches": ["Lire mail.md", "Remplir resultat.json selon formulaire.schema.json"],
+      "entree": ["mail.md"],
+      "schema": "cas/mail-01/formulaire.schema.json",
+      "livrables": ["resultat.json"],
+      "juge": { "script": "cas/mail-01/juge.py", "corrige": "cas/mail-01/golden-formulaire.json", "bareme": 20, "seuil": 16 },
+      "relances_max": 2,
+      "agents": [{ "role": "L'extracteur", "competence": "remplit le formulaire depuis le fil" }]
+    },
+    {
+      "id": "decider", "n": 2, "type": "agent", "name": "Décider les actions",
+      "moteur": "api", "modele": "opus",
+      "objectif": "Déduire du formulaire les cinq actions (verbe + date).",
+      "taches": ["Lire resultat.json", "Écrire actions.json"],
+      "entree": ["resultat.json"],
+      "schema": "cas/mail-01/formulaire.schema.json",
+      "livrables": ["actions.json"],
+      "juge": { "script": "cas/mail-01/juge.py", "corrige": "cas/mail-01/golden-actions.json", "bareme": 10, "seuil": 8 },
+      "relances_max": 1,
+      "agents": [{ "role": "Le décideur", "competence": "transforme le formulaire en actions datées" }]
+    }
+  ]
+}

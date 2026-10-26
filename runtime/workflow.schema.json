@@ -1,0 +1,730 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/flux/workflow.schema.json",
+  "title": "Graphe de flux — contrat commun à toutes les pipelines",
+  "description": "Ce que le moteur lit dans un fichier workflows/<id>.json. Le moteur est générique : il ne connaît aucune pipeline en particulier. Une clé absente d'ici n'est lue par personne ; une clé lue par le runtime doit figurer ici. Contrat v2 (docs/2026-09-04-flux-v2-design.md § 3.1) : tout nœud porte un modèle, une entrée et un juge ; un nœud `api` porte en plus un schéma de sortie. Les objets ajoutés par la v2 (parametres_run, garde, moteurs_api, juge) sont fermés (additionalProperties: false).",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "workspace_root",
+    "nodes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Chemin relatif vers ce fichier."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Identifiant du flux. Sert partout : nom du fichier, argument des commandes, dossier d'état sous flux/state/<id>/."
+    },
+    "name": {
+      "type": "string",
+      "description": "Titre lisible, affiché en tête de la page /flux et des briefs."
+    },
+    "description": {
+      "type": "string",
+      "description": "Une phrase sur ce que la pipeline produit."
+    },
+    "workspace_root": {
+      "type": "string",
+      "pattern": "^(/|~/|\\$)",
+      "description": "Dossier qui contient les runs de cette pipeline (chemin absolu, ou commençant par ~/ ou une variable d'environnement $NOM). Deux pipelines ne le partagent JAMAIS : la run active se résout par ancienneté sous cette racine, et un partage ferait qu'une run en écraserait une autre."
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/node"
+      },
+      "description": "Les étapes, dans l'ordre de lecture."
+    },
+    "ouverture": {
+      "type": "object",
+      "description": "Ce qu'il faut demander pour ouvrir une run depuis la console. Absente, la pipeline n'offre pas le bouton et sa run s'ouvre a la main.",
+      "additionalProperties": false,
+      "properties": {
+        "titre": {
+          "type": "string",
+          "description": "Titre du dialogue d'ouverture."
+        },
+        "slug": {
+          "type": "string",
+          "description": "Gabarit du nom de dossier, en {champ} ; l'horodatage est ajoute apres. Ex. '{subject}-{owner}'."
+        },
+        "entete": {
+          "type": "string",
+          "description": "Gabarit du WORKSPACE.txt. Les champs saisis y sont substitues, plus {stamp}, {base} et {iso}."
+        },
+        "champs": {
+          "type": "array",
+          "description": "Les champs a saisir, dans l'ordre d'affichage.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "cle",
+              "libelle"
+            ],
+            "properties": {
+              "cle": {
+                "type": "string",
+                "description": "Nom du champ dans les gabarits."
+              },
+              "libelle": {
+                "type": "string",
+                "description": "Ce que lit l'utilisateur."
+              },
+              "defaut": {
+                "type": "string",
+                "description": "Valeur pre-remplie."
+              },
+              "multiligne": {
+                "type": "boolean",
+                "description": "Zone de texte plutot que ligne."
+              },
+              "requis": {
+                "type": "boolean",
+                "description": "Faux pour un champ facultatif."
+              },
+              "options_de": {
+                "type": "string",
+                "description": "Le nom d'une source declaree dans `ouverture.sources`, ou `cas` (les dossiers de cas/). Le champ se CHOISIT au lieu de se taper."
+              },
+              "cache": {
+                "type": "boolean",
+                "description": "Le champ est envoye mais pas montre : il se deduit d'un autre. Le sujet suit la veille choisie — le demander deux fois laisserait ouvrir une run au nom d'une veille pour le compte d'une autre."
+              },
+              "filtre": {
+                "type": "boolean",
+                "description": "Vrai : ce champ ne s'ecrit pas dans la run, il filtre les options des champs suivants (ex. le compte qui filtre les veilles)."
+              }
+            }
+          }
+        },
+        "sources": {
+          "type": "object",
+          "description": "D'ou viennent les listes des champs `options_de` (console generique, v2). Une entree par nom de source ; chaque source a un `type` parmi dossiers | fichiers-json | cas et ses reglages. `_doc` libre.",
+          "properties": {
+            "_doc": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "dossiers",
+                  "fichiers-json",
+                  "cas"
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "parametres_run": {
+      "type": "array",
+      "description": "Ce qu'une NOUVELLE run demande (D6, D8). La console construit son dialogue « nouvelle run » depuis cette liste, sans rien savoir du métier. Un paramètre `choix` peut être repris par un nœud sous la forme `{id}` (ex. `\"modele\": \"{modele}\"`).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "Nom du paramètre. Réservés : `cas` (le cas de banc, résolu en cas/<valeur>/), `modele` (repris par les nœuds qui déclarent `\"modele\": \"{modele}\"`)."
+          },
+          "label": {
+            "type": "string",
+            "description": "Ce que lit la personne dans le dialogue."
+          },
+          "type": {
+            "enum": [
+              "fichier",
+              "texte",
+              "choix"
+            ],
+            "description": "fichier = un fichier déposé, rangé dans le workspace à `destination` · texte = une ligne · choix = une valeur parmi `options` ou `options_de`."
+          },
+          "requis": {
+            "type": "boolean",
+            "description": "Faux pour un paramètre facultatif. Absent : requis."
+          },
+          "mode": {
+            "enum": [
+              "banc",
+              "production",
+              "les-deux"
+            ],
+            "description": "Dans quel mode de run le paramètre est demandé. Absent : les-deux. Le cas de banc est `banc`, le fichier neuf de production est `production`."
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Choix fixes, dans l'ordre d'affichage."
+          },
+          "options_de": {
+            "enum": [
+              "cas"
+            ],
+            "description": "Choix dynamique : `cas` = les dossiers cas/*/ du dépôt (chacun porte les entrées et les corrigés d'un cas de banc)."
+          },
+          "defaut": {
+            "type": "string",
+            "description": "Valeur pré-remplie."
+          },
+          "destination": {
+            "type": "string",
+            "description": "Type fichier : chemin relatif au workspace où la run range le fichier déposé — c'est ce chemin que les nœuds nomment dans `entree`. En banc, le même chemin est copié depuis cas/<cas>/."
+          }
+        }
+      }
+    },
+    "garde": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "toutes_les_min",
+        "modele",
+        "relances_max"
+      ],
+      "description": "La garde (D4) : un agent léger réveillé par un timer, qui lit l'état compact de la run et n'a que trois gestes (relancer, rouge, alerter). Absente : pas de garde, le séquenceur enchaîne seul.",
+      "properties": {
+        "toutes_les_min": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Période du timer, en minutes."
+        },
+        "modele": {
+          "type": "string",
+          "pattern": "^(opus|sonnet|haiku|claude-[a-z0-9.-]+|ollama:[A-Za-z0-9._:/-]+)$",
+          "description": "Modèle de la garde — petit par construction (haiku, ollama:<nom>)."
+        },
+        "relances_max": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Relances par nœud avant d'alerter, quand le nœud ne déclare pas son propre `relances_max`."
+        }
+      }
+    },
+    "moteurs_autorises": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "tmux",
+          "api"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Les moteurs que ce workflow a le droit d'employer (D1). Un nœud dont le `moteur` n'y figure pas est refusé. Absent : tmux seulement."
+    },
+    "moteurs_api": {
+      "type": "array",
+      "description": "Les moteurs API que la console affiche en tête (D8) et que le moteur `api` sait joindre. Un modèle `opus|sonnet|haiku|claude-*` va au moteur `anthropic`, un modèle `ollama:<nom>` au moteur `ollama`.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Nom affiché et clé dans moteurs.json (tarifs, version)."
+          },
+          "type": {
+            "enum": [
+              "anthropic",
+              "ollama"
+            ],
+            "description": "anthropic = Messages API avec tool_use strict (input_schema) · ollama = /api/chat avec `format` = le schéma."
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://",
+            "description": "Adresse du serveur (Ollama : ex. http://127.0.0.1:11434). Absente pour anthropic (API publique)."
+          },
+          "modeles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Les modèles que ce moteur sert, pour la jauge de la console. Informatif."
+          }
+        }
+      }
+    },
+    "cache": {
+      "type": "boolean",
+      "description": "Vrai : le workflow ne s'affiche pas dans le choix de la console (variante de test, pipeline en pause, exemple). Il reste jouable par l'API et visible via « autres »."
+    },
+    "_cache_pourquoi": {
+      "type": "string",
+      "description": "Pourquoi ce workflow est cache (lisible par un humain)."
+    },
+    "test": {
+      "type": "object",
+      "description": "La SUITE DE TEST du workflow : ce qu'un clic sur « lancer un test » joue a la suite sur un meme cas (design v2, vue test). Chaque element = une configuration (un workflow, un modele).",
+      "additionalProperties": false,
+      "properties": {
+        "suite": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "titre",
+              "workflow"
+            ],
+            "properties": {
+              "titre": {
+                "type": "string"
+              },
+              "workflow": {
+                "type": "string"
+              },
+              "modele": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "variante_de": {
+      "type": "string",
+      "description": "Ce workflow est une VARIANTE de test d'un autre (ex. mail-1noeud pour mail) : la console montre les tests du parent sur sa page, et un chemin de retour."
+    },
+    "orchestrateur": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "L'agent en charge de la run (v2, 04/09 soir) : reveille a chaque fin d'etape et a chaque ronde, il decide lancer / relancer / terminer / bloquer / attendre. `modele` : opus | sonnet | haiku | ollama:<nom> (sinon garde.modele, sinon sonnet).",
+      "properties": {
+        "modele": {
+          "type": "string"
+        }
+      }
+    },
+    "cible": {
+      "type": "number",
+      "description": "La note visee (sur le bareme du juge) par la descente de modeles : la note du modele de reference sur le jeu d evaluation moins la tolerance ecrite (docs/2026-09-09-descente-modeles.md). La console la trace sur la progression des essais."
+    },
+    "version": {
+      "type": "string",
+      "description": "L etiquette de la version des consignes (v2, v3…), telle que la console et la descente de modeles la nomment. Sans elle : le suffixe -vN de l id, sinon v1."
+    }
+  },
+  "$defs": {
+    "node": {
+      "type": "object",
+      "required": [
+        "id",
+        "n",
+        "name",
+        "modele",
+        "entree",
+        "livrables"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+          "description": "Identifiant du nœud, argument des commandes. Majuscules tolérées (mission-flux-v2 nomme ses nœuds T1…T12, juge-T1…)."
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Rang de l'etape. Un noeud de verification porte le rang de l'etape qu'il juge : il n'a pas de rang a lui."
+        },
+        "type": {
+          "enum": [
+            "agent",
+            "local",
+            "human",
+            "fanout"
+          ],
+          "description": "agent = joué par une session lancée par le flux · local = joué en conversation, le flux ne lance rien · human = barrière humaine, le flux attend · fanout = plusieurs agents en parallèle."
+        },
+        "name": {
+          "type": "string",
+          "description": "Titre du nœud, repris dans le brief et la banderole."
+        },
+        "moteur": {
+          "enum": [
+            "tmux",
+            "api"
+          ],
+          "default": "tmux",
+          "description": "tmux = une session Claude Code dans tmux (outils, sous-agents) · api = un appel direct au modèle (Anthropic Messages ou Ollama /api/chat), sortie contrainte par `schema`, sans terminal. Absent : tmux."
+        },
+        "entree": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Chemins relatifs au workspace que CE nœud reçoit — en général les livrables du nœud précédent, ou le fichier qu'un paramètre de run range à sa `destination`. La console en fait le lien « entrée ». Obligatoire ; `[]` seulement pour un nœud qui part de la conversation (webapp : le pitch)."
+        },
+        "schema": {
+          "type": "string",
+          "description": "Moteur api : chemin, relatif à la racine du dépôt flux, du JSON Schema qui contraint la sortie (Anthropic : `input_schema` d'un tool_use strict ; Ollama : `format`). Le schéma reste dans le sous-ensemble commun aux deux (pas de pattern, minimum, minLength, minItems > 1 : ces contraintes vont dans les descriptions). Un livrable = le document rendu ; plusieurs livrables = un objet dont chaque clé est le nom d'un livrable sans son extension, écrit dans son fichier."
+        },
+        "juge": {
+          "$ref": "#/$defs/juge",
+          "description": "Le juge de l'étape (D3), obligatoire (ou `juges`). Il reçoit tous les `livrables` du nœud."
+        },
+        "juges": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/juge_nomme"
+          },
+          "description": "Plusieurs juges quand le nœud rend plusieurs livrables notés séparément : chacun nomme la `sortie` (un des `livrables`) qu'il lit. La note de la passe est la somme des scores sur la somme des barèmes. Exclusif avec `juge`."
+        },
+        "relances_max": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Relances automatiques de ce nœud sur passe rouge (panne ou note sous le seuil) avant `bloque` + alerte. Absent : la valeur de `garde.relances_max`, sinon 0."
+        },
+        "objectif": {
+          "type": "string",
+          "description": "Ce que le nœud doit produire, en prose. Premier paragraphe du brief."
+        },
+        "taches": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "La check-list imposée à l'agent, dans l'ordre. Le titre APPARIE cette liste et taches_detail : changer un libellé d'un seul côté décroche le détail, et le brief perd la consigne sans rien signaler."
+        },
+        "taches_detail": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tache"
+          },
+          "description": "Le detail de chaque tache. Chaque niveau porte objectif + livrable + bullets ; sous_taches descend d'un cran."
+        },
+        "livrables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Chemins relatifs au workspace, écrits par CE nœud. Un nœud n'est jugé que sur ce qu'il produit : y mettre le travail d'un autre nœud le fait refuser pour une faute qu'il ne peut pas commettre. Servent aussi de gate d'entrée au nœud suivant."
+        },
+        "gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "validateur": {
+              "type": "string",
+              "description": "Identifiant du validateur exécuté à la sortie par runtime/validate.py (cherché dans FLUX_VALIDATORS_PATH, validators/, puis <FLUX_PIPELINE_RUNTIME>/validators/). Sans lui, seule la présence des livrables est vérifiée."
+            },
+            "apres_accents": {
+              "type": "string",
+              "description": "Commande relancee, avec le workspace en argument, UNIQUEMENT si la passe d'accents de fin de noeud a modifie un livrable. Sert a rejouer un deploiement que cette passe vient de perimer : sans elle, ce qui est servi differe de ce qui est local des la fin du noeud, et toute attestation d'egalite devient fausse hors de portee du noeud qui l'a ecrite. CONVENTION : si `<workspace>/scripts/<meme nom de fichier>` existe, c'est LUI qui est joue — une run qui porte sa variante d'un script de skill ne doit pas se la faire ecraser par la version generique."
+            }
+          }
+        },
+        "suivant": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Nœuds débloqués par celui-ci. Vide = fin de flux."
+        },
+        "consignes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Moteur tmux : skills injectés en system prompt au lancement du nœud — c'est le protocole que l'agent lit, il n'y a pas de lecture « à la demande ». Moteur api : texte libre, concaténé dans l'ordre pour former la consigne de l'appel (le formulaire vierge y figure)."
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Whitelist d'outils. Restriction dure : hors de cette liste, l'outil est refusé sans prompt."
+        },
+        "agents": {
+          "type": "array",
+          "description": "Pour un fanout : la liste des agents lancés en parallèle, chacun avec son propre prompt.",
+          "items": {
+            "type": "object"
+          }
+        },
+        "commande_locale": {
+          "type": "string",
+          "description": "Nœud local : la commande à taper, si elle diffère de « flux-local <flux> <nœud> »."
+        },
+        "note_locale": {
+          "type": "string",
+          "description": "Nœud local : ce que la page /flux affiche à la place d'un bouton Lancer."
+        },
+        "note_humaine": {
+          "type": "string",
+          "description": "Nœud human : ce qu'on attend de la personne."
+        },
+        "contexte_valide": {
+          "type": "string",
+          "description": "Nœud human : le fait à constater pour considérer la barrière franchie."
+        },
+        "url": {
+          "type": "string",
+          "description": "Nœud human : l'adresse où la personne fait son travail."
+        },
+        "banderole": {
+          "type": "string",
+          "description": "Nœud local : le titre déroulé au gate vert. Jouée en conversation, une étape ne se termine pas d'elle-même — sans cette marque, la session enchaîne comme si rien n'avait été franchi."
+        },
+        "modele": {
+          "type": "string",
+          "pattern": "^(opus|sonnet|haiku|claude-[a-z0-9.-]+|ollama:[A-Za-z0-9._:/-]+|\\{[a-z][a-z0-9_]*\\})$",
+          "description": "Modèle du nœud, OBLIGATOIRE (fin du « tout Opus » implicite). Un alias suit la dernière génération (opus, sonnet, haiku) ; un nom complet (claude-…) la fige ; `ollama:<nom>` va au moteur Ollama ; `{id}` reprend un paramètre de run de type choix."
+        },
+        "verification": {
+          "type": "boolean",
+          "description": "true = ce noeud est le CONTROLE de l'etape de meme rang, pas une etape de plus. La verification revient a chaque etape ; elle a la meme forme partout (recenser · fouiller contre les transcripts · agreger). Ses taches se numerotent `<rang>-verification.1/.2/.3`, et son validateur s'appelle `<rang>-verification`."
+        },
+        "livrables_conditionnels": {
+          "type": "object",
+          "description": "Livrables qui ne sont exiges que si leur MATIERE existe. Cle = un chemin present dans `livrables` ; valeur = la condition. Sert au cas ou un nœud n'a legitimement rien a produire : sans elle, le graphe exige un dossier et declare ailleurs que son absence est normale — le gate tranche alors contre le travail reel. La dispense est ecrite dans l'etat du nœud (`livrables_dispenses`), jamais silencieuse.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "exige_si_present"
+            ],
+            "properties": {
+              "exige_si_present": {
+                "type": "string",
+                "description": "Chemin ABSOLU de la matiere. Le livrable n'est exige que si ce chemin porte au moins un fichier non vide (recursif pour un dossier). Les champs du WORKSPACE.txt de la run s'y substituent en {champ} — {owner}, {subject}…"
+              },
+              "sinon": {
+                "type": "string",
+                "description": "Ce que le vide signifie, en une phrase. Ecrit dans l'etat du nœud et dans le journal quand la dispense s'applique."
+              }
+            }
+          }
+        },
+        "consignes_reprise": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Les protocoles a injecter quand ce nœud REPART apres un refus, a la place de `skills`. Un reparateur applique une liste de gestes prescrits : le manuel de production lui est renvoye a chacun de ses tours de parole pour rien. Sans cette cle, la reprise recoit les memes protocoles que la production."
+        },
+        "rapport_de_passe": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Ce que le rapport de passe de CE nœud doit porter, en plus du squelette commun que pose le runtime. Le squelette (en-tête, six sections) est du socle et ne se redéclare pas ; ici on ne met que ce qui est propre à l'étape — les chiffres qu'elle seule peut donner, et ce qu'un lecteur veut savoir d'elle. Un nœud sans cette clé rend le squelette nu.",
+          "properties": {
+            "chiffres": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Les mesures OBLIGATOIRES, une par ligne, ecrites « cle: ce qu'on veut lire ». La cle part telle quelle dans l'en-tete du rapport (lisible par une machine, stable d'une passe a l'autre), le libelle dit a l'agent ce qu'on attend. Ex. « vivier: pistes rendues -> fondues -> au vivier »."
+            },
+            "a_dire": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Ce qu'un lecteur veut savoir de cette étape et qu'aucune autre ne peut dire. Une ligne par point, à l'impératif."
+            },
+            "en_reparation": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Ce que le rapport porte EN PLUS quand la passe est une réparation (un rapport de contrôle a refusé le nœud). Une passe de correction ne se raconte pas comme une passe de production."
+            }
+          }
+        },
+        "passes_max": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Le nombre de passes au-dela duquel l'etape PASSE avec ses defauts restants, consignes et non corriges. Ne leve jamais une faute GRAVE : une affirmation que sa source ne soutient pas se repare ou se retire, elle ne se consigne pas. Absent = pas de plafond propre, seul le plafond dur de 15 passages et le seuil de stagnation s'appliquent."
+        }
+      },
+      "description": "Une étape. Contrat v2 : `modele`, `entree` et un juge (`juge` ou `juges`) sont obligatoires sur tout nœud ; `moteur: api` exige `schema` et `consignes` (texte libre) ; `moteur: tmux` (défaut) exige `type`, `objectif`, `taches` comme avant.",
+      "oneOf": [
+        {
+          "required": [
+            "juge"
+          ]
+        },
+        {
+          "required": [
+            "juges"
+          ]
+        }
+      ],
+      "if": {
+        "required": [
+          "moteur"
+        ],
+        "properties": {
+          "moteur": {
+            "const": "api"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "schema",
+          "consignes"
+        ]
+      },
+      "else": {
+        "required": [
+          "type",
+          "objectif",
+          "taches"
+        ]
+      }
+    },
+    "tache": {
+      "type": "object",
+      "required": [
+        "titre"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "titre": {
+          "type": "string",
+          "description": "Au premier niveau, doit correspondre EXACTEMENT a une entree de taches."
+        },
+        "par": {
+          "type": "string",
+          "description": "Qui fait ce geste — l'agent, l'humain, ou les deux."
+        },
+        "objectif": {
+          "type": "string",
+          "description": "Ce que ce niveau doit obtenir. Une phrase, pas un paragraphe."
+        },
+        "livrable": {
+          "type": "string",
+          "description": "Ce qui existe une fois le niveau fini : un chemin, un fichier, un fait constatable. Un niveau sans livrable n'est pas une etape, c'est un commentaire."
+        },
+        "detail": {
+          "type": "string",
+          "description": "Des bullets imperatifs, une idee par ligne. Pas de prose : le graphe enonce, le skill explique."
+        },
+        "si_succes": {
+          "type": "string",
+          "description": "Ou l'on va quand ce niveau est atteint."
+        },
+        "si_echec": {
+          "type": "string",
+          "description": "Quoi faire quand il ne l'est pas. Dit un geste, jamais « voir le skill »."
+        },
+        "sous_taches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tache"
+          },
+          "description": "Sous-niveaux, meme forme. Recursif : chaque niveau porte son objectif et son livrable."
+        }
+      }
+    },
+    "juge_corps": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "presence",
+              "description": "Juge minimal : livrables présents et non vides → score = bareme, sinon 0 (runtime/juges/presence.py). Déclaré explicitement pour que le lecteur voie que l'étape n'est pas notée sur son contenu."
+            },
+            "bareme": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Absent : 20."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "script",
+            "corrige",
+            "bareme"
+          ],
+          "properties": {
+            "script": {
+              "type": "string",
+              "description": "Chemin, relatif à la racine du dépôt flux, d'un script SANS modèle : `script <corrige> <sortie>...` → JSON {score, bareme, lignes} sur stdout (runtime/juge.py le lance)."
+            },
+            "corrige": {
+              "type": "string",
+              "description": "Nom du corrigé, résolu dans le dossier du cas de banc de la run : cas/<cas>/<corrige>."
+            },
+            "bareme": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Total de points. Le script doit rendre ce même barème, sinon la passe est en panne."
+            }
+          }
+        }
+      ]
+    },
+    "juge": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/juge_corps"
+        }
+      ],
+      "unevaluatedProperties": false,
+      "description": "Un juge : `{type: presence}` ou `{script, corrige, bareme}`. Aucune autre clé."
+    },
+    "juge_nomme": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/juge_corps"
+        }
+      ],
+      "required": [
+        "sortie"
+      ],
+      "properties": {
+        "sortie": {
+          "type": "string",
+          "description": "Le livrable (un des `livrables` du nœud) que ce juge lit."
+        }
+      },
+      "unevaluatedProperties": false,
+      "description": "Un juge de `juges` : comme `juge`, plus la `sortie` qu'il note."
+    }
+  }
+}

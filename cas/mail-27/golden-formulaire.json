@@ -1,0 +1,18 @@
+{
+  "expediteur": "sabrina.delcros@example-formation.fr",
+  "date_du_message": "2026-11-06",
+  "nature": "convocation",
+  "reponse_attendue": false,
+  "reference": "FORM-2026-1187",
+  "echeance": "2026-12-02",
+  "rdv_date": "2026-11-12",
+  "rdv_heure": "08:30",
+  "montant_du_euros": 0,
+  "documents_a_fournir": [
+    "badge",
+    "livret",
+    "curriculum",
+    "diplome"
+  ],
+  "lien": "https://stagiaires.example-formation.fr/inscription/FORM-2026-1187"
+}

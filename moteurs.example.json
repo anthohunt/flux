@@ -1,0 +1,41 @@
+{
+  "_doc": "Copy this file to moteurs.json (ignored by git) and adapt it. A MOTEUR (engine) is one Claude account: the folder of Claude Code configuration it runs with. A run picks its engine in <workspace>/state/moteur; otherwise `defaut` applies. Paths may start with ~.",
+  "defaut": "defaut",
+  "moteurs": [
+    {
+      "id": "defaut",
+      "nom": "Default",
+      "config_dir": "~/.claude",
+      "_note": "Optional keys: `compte` (the account e-mail, shown in the console and checked against the folder's real login), `fichier_jeton` (an env file exporting CLAUDE_CODE_OAUTH_TOKEN, sourced before each agent session)."
+    }
+  ],
+  "claude_version": "",
+  "_claude_version": "The Claude Code version the tmux engine was tested with (it reads a TUI screen). When set, run-node.py refuses any other version; FLUX_IGNORER_VERSION=1 bypasses the check. Empty = no check.",
+  "serveur": {
+    "_note": "Only for runtime/flux-local, when you play an interactive step on another machine than the flux server. FLUX_VPS / FLUX_API override these values.",
+    "ssh": "",
+    "api": ""
+  },
+  "moteurs_api": {
+    "_doc": "Providers of the `api` engine. Anthropic models go through `claude -p` with the run's engine folder (no API key in flux). Ollama and llama.cpp are reached over HTTP; FLUX_OLLAMA_URL / FLUX_LLAMACPP_URL or <workspace>/state/ollama-url override the address.",
+    "anthropic": {
+      "modeles": ["opus", "sonnet", "haiku"]
+    },
+    "ollama": {
+      "url": "http://127.0.0.1:11434",
+      "modeles": ["qwen3:4b"],
+      "num_ctx": 32768
+    },
+    "llamacpp": {
+      "url": "http://127.0.0.1:8080",
+      "ssh": "",
+      "_doc": "Optional `ssh`: a host on which `ssh <host> servir <model>` switches the llama-server to another model before a campaign (tools/jouer-lot.py)."
+    }
+  },
+  "tarifs": {
+    "_doc": "Dollars per million tokens (public prices), used to give each pass an order-of-magnitude cost. Local models cost 0.",
+    "opus":   {"entree": 5.0, "sortie": 25.0, "cache_ecrit": 6.25, "cache_lu": 0.5},
+    "sonnet": {"entree": 3.0, "sortie": 15.0, "cache_ecrit": 3.75, "cache_lu": 0.3},
+    "haiku":  {"entree": 1.0, "sortie": 5.0,  "cache_ecrit": 1.25, "cache_lu": 0.1}
+  }
+}

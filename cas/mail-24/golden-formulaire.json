@@ -1,0 +1,13 @@
+{
+  "expediteur": "divel.accuses@example-ac-valbourg.fr",
+  "date_du_message": "2026-10-08",
+  "nature": "convocation",
+  "reponse_attendue": false,
+  "reference": "AFF-99-2026-4417",
+  "echeance": "2026-10-19",
+  "rdv_date": "2026-10-22",
+  "rdv_heure": "14:30",
+  "montant_du_euros": 0,
+  "documents_a_fournir": ["livret", "domicile", "radiation", "assurance"],
+  "lien": "https://teleinscription.example-ac-valbourg.fr/2026/balzac"
+}

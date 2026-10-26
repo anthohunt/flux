@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "evenements",
+  "description": "Sortie du noeud « Extraire les evenements d'agenda » : la date du message le plus recent, puis la liste des evenements a poser dans l'agenda du destinataire, dans l'etat FINAL du fil. Sous-ensemble commun au tool_use strict d'Anthropic, au `format` d'Ollama et a la grammaire de llama.cpp : ni pattern, ni minimum/maximum, ni minLength/maxLength, ni $ref ; tout objet est ferme. Les contraintes de forme (AAAA-MM-JJ, HH:MM) vivent dans les descriptions. L'absence est une VALEUR : chaine vide, 0, liste vide — jamais une cle manquante ni null.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["date_du_message", "evenements"],
+  "properties": {
+    "date_du_message": {
+      "type": "string",
+      "description": "Date du message le plus recent du fil, AAAA-MM-JJ. C'est l'ancre de toutes les dates relatives (« sous dix jours », « la veille »)."
+    },
+    "evenements": {
+      "type": "array",
+      "description": "Les evenements, dans l'ordre chronologique de date_debut puis heure_debut. Liste vide si le fil n'appelle rien dans l'agenda.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action", "type", "titre", "date_debut", "heure_debut", "date_fin", "heure_fin", "lieu", "lien", "reference", "montant_euros", "documents", "notes"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["creer", "annuler"],
+            "description": "creer = l'evenement doit figurer dans l'agenda (creation, ou remplacement d'une version anterieure). annuler = le fil annule explicitement un rendez-vous ou une echeance sans le remplacer : l'evenement porte la date et l'heure d'origine, pour qu'on puisse le retirer de l'agenda."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["rendez_vous", "echeance", "periode"],
+            "description": "rendez_vous = le destinataire doit etre quelque part a une heure donnee (lieu tiers, visioconference, ou intervention chez lui) ; heure_debut obligatoire. echeance = une date avant laquelle le destinataire doit faire quelque chose (repondre, payer, envoyer, deposer, s'inscrire, reserver) ; journee entiere sauf heure nommee. periode = plusieurs jours d'affilee (sejour, chantier chez soi, traitement a suivre, travaux dans l'immeuble) ; date_fin obligatoire."
+          },
+          "titre": {
+            "type": "string",
+            "description": "Titre court et lisible dans un agenda : ce qui se passe, et avec qui. Ex. « Visite T3 — 12 rue des Lilas », « Payer l'acompte du devis D-2026-418 »."
+          },
+          "date_debut": {
+            "type": "string",
+            "description": "AAAA-MM-JJ. Pour une echeance : la date que le mail nomme (« avant le 13 » -> le 13, « au plus tard le 2 » -> le 2), jamais recalculee d'un jour. Pour un rendez-vous deplace : la date la plus recente du fil."
+          },
+          "heure_debut": {
+            "type": "string",
+            "description": "HH:MM sur 24 heures, deux chiffres (08:45, 14:00), en heure de Paris (une heure donnee dans un autre fuseau se convertit). Chaine vide pour une echeance sans heure nommee et pour une periode."
+          },
+          "date_fin": {
+            "type": "string",
+            "description": "AAAA-MM-JJ, seulement quand l'evenement s'etend sur plusieurs jours (periode). Chaine vide sinon."
+          },
+          "heure_fin": {
+            "type": "string",
+            "description": "HH:MM : l'heure de fin quand le mail la donne (« de 14h00 a 16h00 », « jusqu'a 18h15 »), ou heure_debut + la duree annoncee (« comptez deux heures », « environ quarante-cinq minutes »). Chaine vide si le mail ne donne ni fin ni duree."
+          },
+          "lieu": {
+            "type": "string",
+            "description": "Ou ca se passe, dans les mots du mail : adresse ou salle pour un lieu tiers ; « visioconference » pour une reunion a distance ; « domicile » quand quelqu'un vient chez le destinataire. Chaine vide pour une echeance en ligne ou par mail, et pour un evenement annule."
+          },
+          "lien": {
+            "type": "string",
+            "description": "L'adresse a ouvrir pour AGIR sur cet evenement (formulaire, depot de pieces, paiement, reservation, lien de reunion), recopiee telle quelle. Chaine vide si le fil n'en donne aucune pour cet evenement, ou si les seules adresses sont documentaires (site, plan d'acces, politique de donnees)."
+          },
+          "reference": {
+            "type": "string",
+            "description": "Le numero que le mail donne a l'affaire (dossier, devis, sinistre, convocation), recopie tel quel, sans le mot qui l'introduit. Chaine vide si le fil n'en donne aucun."
+          },
+          "montant_euros": {
+            "type": "number",
+            "description": "La somme que le destinataire doit payer POUR CET evenement (a cette echeance), en nombre, point decimal, calculee si le mail ne donne que le taux (30 % du TTC). 0 si rien n'est a payer a cette date, y compris quand le fil cite des montants qui ne sont pas dus (deja regle, prix affiche, franchise deduite, base de remboursement)."
+          },
+          "documents": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Les pieces a apporter, joindre ou renvoyer POUR CET evenement, une par item, dans les mots du mail. Liste vide si rien n'est demande, et pour un evenement annule. Ni ce que le mail interdit d'apporter, ni ce qu'il fournit lui-meme."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Ce qu'il est utile de relire dans l'agenda : consignes (a jeun, arriver 15 min avant, originaux exiges), code d'acces, ordre du jour, IBAN, ce qui n'a pas de date propre mais se rattache a cet evenement. Chaine vide s'il n'y a rien."
+          }
+        }
+      }
+    }
+  }
+}

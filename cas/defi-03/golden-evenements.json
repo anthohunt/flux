@@ -1,0 +1,35 @@
+{
+  "date_du_message": "2026-10-29",
+  "evenements": [
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Régler la cotisation 2027 Valbourg Vélo Loisirs",
+      "date_debut": "2026-10-31",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "https://www.example-helloasso.fr/valbourg-velo-loisirs/adhesion-2027",
+      "reference": "",
+      "montant_euros": 25,
+      "documents": [],
+      "notes": "condition pour voter à l'assemblée générale"
+    },
+    {
+      "action": "creer",
+      "type": "rendez_vous",
+      "titre": "Assemblée générale Valbourg Vélo Loisirs",
+      "date_debut": "2026-11-14",
+      "heure_debut": "15:00",
+      "date_fin": "",
+      "heure_fin": "17:30",
+      "lieu": "2 rue des Frênes",
+      "lien": "",
+      "reference": "",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": "Maison des associations, salle des Remparts, rez-de-chaussée (et non la salle des fêtes de Mervel) ; parking gratuit le samedi ; pot convivial après"
+    }
+  ]
+}

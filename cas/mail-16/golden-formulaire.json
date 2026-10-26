@@ -1,0 +1,20 @@
+{
+  "expediteur": "sylvie.combes@amisduquartier.example.fr",
+  "date_du_message": "2026-10-06",
+  "nature": "convocation",
+  "reponse_attendue": true,
+  "reference": "AQ-2026-118",
+  "echeance": "2026-10-09",
+  "rdv_date": "2026-10-18",
+  "rdv_heure": "08:00",
+  "montant_du_euros": 0,
+  "documents_a_fournir": [
+    "tréteau",
+    "nappe",
+    "caisse",
+    "parasol",
+    "étiquette",
+    "rallonge"
+  ],
+  "lien": "https://amisduquartier.example.fr/brocante/inventaire"
+}

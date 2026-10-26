@@ -1,0 +1,148 @@
+{
+  "schema": "flux/cas.json v1",
+  "_doc": "Les cas de banc du depot. Chaque cas : un fil de mails inventes (mail.md) et ses corriges (golden-*.json). `lot` : sentinelle (garde permanente), boucle (cas sur lesquels on ajuste les consignes), defi (jeu tenu a l'ecart, joue pour mesurer). Un lot de MESURE peut vivre hors du depot (FLUX_MESURE) ; il n'est pas publie ici.",
+  "lots": {
+    "sentinelle": {
+      "n": 1
+    },
+    "boucle": {
+      "n": 7
+    },
+    "defi": {
+      "n": 2
+    }
+  },
+  "cas": [
+    {
+      "id": "mail-01",
+      "theme": "",
+      "difficulte": null,
+      "messages": 2,
+      "axes": [],
+      "utile": 28,
+      "lot": "sentinelle",
+      "chemin": "cas/mail-01"
+    },
+    {
+      "id": "mail-02",
+      "theme": "",
+      "difficulte": "facile",
+      "messages": 1,
+      "axes": [
+        "a16"
+      ],
+      "utile": 26,
+      "lot": "boucle",
+      "chemin": "cas/mail-02"
+    },
+    {
+      "id": "mail-06",
+      "theme": "",
+      "difficulte": "facile",
+      "messages": 3,
+      "axes": [
+        "a18",
+        "a21"
+      ],
+      "utile": 30,
+      "lot": "boucle",
+      "chemin": "cas/mail-06"
+    },
+    {
+      "id": "mail-13",
+      "theme": "",
+      "difficulte": "moyen",
+      "messages": 2,
+      "axes": [
+        "a08",
+        "a12"
+      ],
+      "utile": 30,
+      "lot": "boucle",
+      "chemin": "cas/mail-13"
+    },
+    {
+      "id": "mail-16",
+      "theme": "",
+      "difficulte": "moyen",
+      "messages": 3,
+      "axes": [
+        "a11",
+        "a13",
+        "a16",
+        "a20"
+      ],
+      "utile": 30,
+      "lot": "boucle",
+      "chemin": "cas/mail-16"
+    },
+    {
+      "id": "mail-17",
+      "theme": "",
+      "difficulte": "moyen",
+      "messages": 2,
+      "axes": [
+        "a06",
+        "a07",
+        "a09"
+      ],
+      "utile": 18,
+      "lot": "boucle",
+      "chemin": "cas/mail-17"
+    },
+    {
+      "id": "mail-24",
+      "theme": "",
+      "difficulte": "difficile",
+      "messages": 3,
+      "axes": [
+        "a01",
+        "a13",
+        "a18"
+      ],
+      "utile": 26,
+      "lot": "boucle",
+      "chemin": "cas/mail-24"
+    },
+    {
+      "id": "mail-27",
+      "theme": "",
+      "difficulte": "tres-difficile",
+      "messages": 5,
+      "axes": [
+        "a05",
+        "a06",
+        "a14",
+        "a21"
+      ],
+      "utile": 26,
+      "lot": "boucle",
+      "chemin": "cas/mail-27"
+    },
+    {
+      "id": "defi-03",
+      "theme": "",
+      "difficulte": "facile",
+      "messages": 2,
+      "axes": [
+        "a01"
+      ],
+      "utile": 36,
+      "lot": "defi",
+      "chemin": "cas/defi-03"
+    },
+    {
+      "id": "defi-06",
+      "theme": "",
+      "difficulte": "moyen",
+      "messages": 2,
+      "axes": [
+        "a17",
+        "a05"
+      ],
+      "utile": 36,
+      "lot": "defi",
+      "chemin": "cas/defi-06"
+    }
+  ]
+}

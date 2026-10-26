@@ -1,0 +1,55 @@
+{
+  "date_du_message": "2026-09-10",
+  "evenements": [
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Confirmer sa présence à l'entretien d'instruction du permis de construire",
+      "date_debut": "2026-09-12",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "",
+      "reference": "",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": "par retour de mail à l'accueil du service Urbanisme"
+    },
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Formulaire de pré-instruction à compléter en ligne",
+      "date_debut": "2026-09-19",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "https://urbanisme.example-valbourg.fr/q/7H2K-VALB",
+      "reference": "",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": ""
+    },
+    {
+      "action": "creer",
+      "type": "rendez_vous",
+      "titre": "Entretien d'instruction du permis de construire — service Urbanisme",
+      "date_debut": "2026-09-24",
+      "heure_debut": "08:45",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "12 rue des Lilas",
+      "lien": "",
+      "reference": "",
+      "montant_euros": 0,
+      "documents": [
+        "plan",
+        "photos",
+        "titre",
+        "devis"
+      ],
+      "notes": "prévoir une heure ; 2e étage, accueil B ; parking gratuit place du Manège"
+    }
+  ]
+}

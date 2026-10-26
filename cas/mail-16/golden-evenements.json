@@ -1,0 +1,42 @@
+{
+  "date_du_message": "2026-10-06",
+  "evenements": [
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Brocante : confirmer sa présence et saisir l'inventaire en ligne",
+      "date_debut": "2026-10-09",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "https://amisduquartier.example.fr/brocante/inventaire",
+      "reference": "AQ-2026-118",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": "par retour de mail à Sylvie Combes"
+    },
+    {
+      "action": "creer",
+      "type": "rendez_vous",
+      "titre": "Tenue du stand — brocante d'automne (emplacement 34)",
+      "date_debut": "2026-10-18",
+      "heure_debut": "08:00",
+      "date_fin": "",
+      "heure_fin": "12:00",
+      "lieu": "allée des Tilleuls",
+      "lien": "",
+      "reference": "AQ-2026-118",
+      "montant_euros": 0,
+      "documents": [
+        "tréteau",
+        "nappe",
+        "caisse",
+        "parasol",
+        "étiquette",
+        "rallonge"
+      ],
+      "notes": "déballage possible dès 7h ; 50 € de monnaie dans la caisse ; table prêtée par la mairie ; stand 12 voisin = Jardins partagés"
+    }
+  ]
+}

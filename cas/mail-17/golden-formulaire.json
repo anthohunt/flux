@@ -1,0 +1,13 @@
+{
+  "expediteur": "declarations@cabinet-vergnes.example.fr",
+  "date_du_message": "2026-10-05",
+  "nature": "demande_de_paiement",
+  "reponse_attendue": false,
+  "reference": "810 2604 471 9",
+  "echeance": "2026-10-31",
+  "rdv_date": "",
+  "rdv_heure": "",
+  "montant_du_euros": 1202.75,
+  "documents_a_fournir": [],
+  "lien": "https://mon-compte.example-urssaf.fr/declarer"
+}

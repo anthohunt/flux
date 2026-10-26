@@ -1,0 +1,10 @@
+# gitleaks : regles par defaut, plus une exception documentee.
+# public/vendor/xterm.js est la bibliotheque xterm.js 5.5.0 minifiee, identique octet pour
+# octet a @xterm/xterm@5.5.0/lib/xterm.js (md5 7ab162c8b43e3d6590400143d9b4388f) : la regle
+# generic-api-key y prend un identifiant de code (« FourKeyMap ») pour une cle.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "bibliotheque tierce minifiee, verifiee identique a la version publiee"
+paths = ['''^public/vendor/xterm\.js$''']

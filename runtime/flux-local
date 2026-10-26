@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+# flux-local — joue une étape INTERACTIVE d'un workflow flux dans une session
+# Claude Code LOCALE (laptop), au lieu du tmux du VPS.
+#
+#   flux-local <workflow> <noeud>            prépare : rapatrie le workspace + sort le brief
+#   flux-local <workflow> <noeud> --push     renvoie le travail et passe le gate
+#   flux-local <workflow> <noeud> --pull     rapatrie le workspace seulement
+#   flux-local <workflow> <noeud> --session  ouvre une session claude jetable sur le brief
+#   flux-local <workflow>                    liste les nœuds et leur état
+#
+# UNE ÉTAPE INTERACTIVE NE SE LANCE PAS. Elle se JOUE, dans une session Claude Code
+# déjà ouverte — celle où l'opérateur est en train de parler. Le flux n'a aucun moyen de
+# lancer un dialogue : il n'y aurait personne pour répondre. Son rôle se limite donc
+# à deux gestes : donner le brief de l'étape, et constater le résultat en passant le
+# gate. `--session` n'existe que pour le cas où l'on veut une session neuve dédiée.
+#
+# Le workspace CANONIQUE reste sur le VPS : on le rapatrie, on travaille, on le renvoie.
+# Le gate qui juge le travail est le même pour tous les nœuds, où qu'ils soient joués.
+set -euo pipefail
+
+# L'adresse du serveur n'est plus ecrite ici : FLUX_VPS / FLUX_API, sinon
+# moteurs.json (`serveur`) du depot flux, lu a cote de ce script.
+_MOTEURS="$(dirname "$0")/../moteurs.json"
+[ -f "$_MOTEURS" ] || _MOTEURS="$(dirname "$0")/../moteurs.example.json"
+_lire_serveur() { python3 -c "import json,sys; d=json.load(open(sys.argv[1])).get('serveur') or {}; print(d.get(sys.argv[2],''))" "$_MOTEURS" "$1" 2>/dev/null; }
+VPS="${FLUX_VPS:-$(_lire_serveur ssh)}"
+API="${FLUX_API:-$(_lire_serveur api)}"
+[ -z "$VPS" ] && { echo "adresse du serveur inconnue : pose FLUX_VPS (user@hote) ou moteurs.json:serveur.ssh"; exit 1; }
+[ -z "$API" ] && { echo "adresse de la console inconnue : pose FLUX_API (http://hote:8901) ou moteurs.json:serveur.api"; exit 1; }
+# Chemin du depot flux SUR LE SERVEUR (FLUX_DISTANT), pas sur ce poste.
+RUNTIME="${FLUX_DISTANT:-flux}/runtime/run-node.py"
+LOCALROOT="${FLUX_LOCAL_ROOT:-$HOME/flux-runs}"
+
+WF="${1:-}"; NODE="${2:-}"; MODE="${3:-}"
+[ -z "$WF" ] && { echo "usage: flux-local <workflow> <noeud> [--push|--pull]"; exit 1; }
+
+wf_json() { curl -sf "$API/api/wf/$WF?t=$(date +%s)"; }
+
+if [ -z "$NODE" ]; then
+  wf_json | python -c "
+import json,sys
+d=json.load(sys.stdin)
+print(d['name'],'— run:',d.get('workspace_nom') or 'aucune')
+for n in d['nodes']:
+    et=(n.get('etat') or {}).get('statut','a-faire')
+    print(f\"  {n['n']}. {n['id']:16s} {n['type']:7s} {et}\")
+"
+  exit 0
+fi
+
+INFO=$(wf_json | python -c "
+import json,sys
+d=json.load(sys.stdin)
+n=next((x for x in d['nodes'] if x['id']=='$NODE'), None)
+if not n: sys.exit('noeud inconnu: $NODE')
+if not d.get('workspace_nom'): sys.exit('aucun workspace actif — ouvre une run (new-run.py)')
+print(d['workspace_nom']); print(d.get('workspace')); print(n['type']); print(n['name'])
+")
+RUN=$(echo "$INFO" | sed -n 1p)
+WSVPS=$(echo "$INFO" | sed -n 2p)
+TYPE=$(echo "$INFO" | sed -n 3p)
+NOM=$(echo "$INFO" | sed -n 4p)
+WSLOC="$LOCALROOT/$RUN"
+
+# scp -p preserves mtimes; without it every transferred file is stamped "now" at
+# copy time, and freshness gates (a livrable must postdate WORKSPACE.txt) become a
+# coin flip on transfer order. rsync (when present) already preserves times via -a;
+# this is only the fallback used when rsync is absent (e.g. plain Windows git-bash).
+HAVE_RSYNC=0; command -v rsync >/dev/null 2>&1 && HAVE_RSYNC=1
+
+pull() {
+  mkdir -p "$WSLOC"
+  echo "↓ rapatriement du workspace  $WSVPS  →  $WSLOC"
+  if [ "$HAVE_RSYNC" = 1 ]; then
+    rsync -az --delete --exclude '.git' "$VPS:$WSVPS/" "$WSLOC/" 2>/dev/null \
+      || scp -qpr "$VPS:$WSVPS/." "$WSLOC/"
+  else
+    scp -qpr "$VPS:$WSVPS/." "$WSLOC/"
+  fi
+}
+
+push() {
+  echo "↑ renvoi du travail  $WSLOC  →  $WSVPS"
+  if [ "$HAVE_RSYNC" = 1 ]; then
+    rsync -az --exclude '.git' "$WSLOC/" "$VPS:$WSVPS/" 2>/dev/null \
+      || scp -qpr "$WSLOC/." "$VPS:$WSVPS/"
+  else
+    scp -qpr "$WSLOC/." "$VPS:$WSVPS/"
+  fi
+  echo "▶ contrôle de l'étape (gate)"
+  ssh "$VPS" "python3 $RUNTIME $WF $NODE --workspace '$WSVPS'" || true
+}
+
+case "$MODE" in
+  --pull) pull; exit 0 ;;
+  --push) push; exit 0 ;;
+esac
+
+echo "═══ $NOM  [$TYPE]  · run $RUN"
+pull
+
+echo "✎ brief de l'étape"
+BRIEF_VPS=$(ssh "$VPS" "python3 $RUNTIME $WF $NODE --workspace '$WSVPS' --brief-only" | tail -1)
+BDIR="$WSLOC/.flux/$NODE"; mkdir -p "$BDIR"
+scp -q "$VPS:$BRIEF_VPS" "$BDIR/brief.md"
+scp -q "$VPS:$(dirname "$BRIEF_VPS")/sys.md" "$BDIR/sys.md" 2>/dev/null || : > "$BDIR/sys.md"
+
+if [ "$MODE" = "--session" ]; then
+  echo "▶ session claude jetable sur le brief — l'agent écrit dans $WSLOC"
+  echo
+  cd "$WSLOC"
+  claude "$(cat "$BDIR/brief.md")" --append-system-prompt "$(cat "$BDIR/sys.md")" || true
+  echo
+  read -r -p "Étape terminée ? renvoyer le travail et passer le contrôle [O/n] " rep
+  case "${rep:-O}" in [nN]*) echo "rien renvoyé — relance plus tard : flux-local $WF $NODE --push";; *) push;; esac
+  exit 0
+fi
+
+cat <<TXT
+
+Étape interactive prête. Le flux ne la lance pas : joue-la dans ta session Claude Code.
+
+  brief      $BDIR/brief.md
+  protocole  $BDIR/sys.md
+  workspace  $WSLOC
+
+Quand c'est fini :  flux-local $WF $NODE --push
+TXT

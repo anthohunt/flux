@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>flux</title>
+<style>
+:root{--bg:#0f1114;--card:#171a1f;--card2:#1e2229;--line:#2a2f37;--ink:#e8eaed;--ink2:#aab0b8;--ink3:#8b929c;--run:#4da3ff;--ok:#3fb27f;--warn:#e0a83a;--bad:#e05a4e;--mono:ui-monospace,Consolas,"Cascadia Mono",monospace;--r:10px;--pad:16px 18px}
+*{box-sizing:border-box} html{font-size:17px} body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.5 "Segoe UI",system-ui,sans-serif}
+a{color:var(--run);text-decoration:none} button{font:inherit}
+.top{display:flex;align-items:center;gap:20px;height:54px;padding:0 28px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:5}
+.top .logo{font:700 .8rem/1 var(--mono);letter-spacing:.14em;color:var(--ink3)}
+.top .fil{display:flex;gap:10px;align-items:center;font-size:.95rem;color:var(--ink2);min-width:0;overflow:hidden;white-space:nowrap} .top .fil b{color:var(--ink);font-weight:600} .top .fil .sep{color:var(--ink3)}
+.top .droite{margin-left:auto;display:flex;gap:10px;align-items:center;font-size:.85rem;color:var(--ink3)}
+.top .droite .pastille{width:8px;height:8px;border-radius:50%;background:var(--ink3);display:inline-block;margin-right:6px} .top .droite .pastille.on{background:var(--ok)}
+.top button,.btn{font-size:.85rem;padding:6px 12px;border:1px solid var(--line);background:transparent;color:var(--ink2);border-radius:6px;cursor:pointer} .btn.prim{background:var(--run);border-color:var(--run);color:#fff} .btn:disabled{opacity:.5;cursor:default}
+main{width:100%;margin:0 auto;padding:28px 28px 72px}
+h1{font-size:1.5rem;margin:0 0 6px;font-weight:700} .sous{color:var(--ink2);margin:0 0 22px;font-size:.95rem}
+h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin:26px 0 10px;font-weight:600}
+.ecran{display:none} .ecran.actif{display:block}
+.carte,.wf,.tuile,.kpi,table.camp,table.juge,details.doc,.msg{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.wfs{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.wf{padding:var(--pad);cursor:pointer;transition:border-color .15s} .wf:hover{border-color:var(--run)} .wf h3{margin:0 0 6px;font-size:1.1rem} .wf p{margin:0 0 12px;color:var(--ink2);font-size:.95rem;min-height:2.6em}
+.wf.fam{cursor:default;align-self:start} .wf.fam:hover{border-color:var(--line)} .versions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px} .version{display:inline-flex;flex-direction:column;gap:2px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);background:var(--card2)} .version:hover{border-color:var(--run)} .version b{font:600 .95rem var(--mono)} .version .d{font-size:.8rem;color:var(--ink3)} .version .d b{color:var(--ink2);font-weight:600} h2.sect{margin:26px 0 10px;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)} .muets .wf{opacity:.6}
+.wf .chiffres{display:flex;flex-wrap:wrap;gap:6px 16px;font:.85rem var(--mono);color:var(--ink3)} .wf .chiffres span{white-space:nowrap} .wf .chiffres b{color:var(--ink);font-weight:600}
+.lots{display:flex;gap:6px;margin:0 0 16px;align-items:center} .lots button{font-size:.9rem;padding:6px 14px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink2);cursor:pointer} .lots button.on{background:var(--card2);color:var(--ink);border-color:var(--ink3)} .lots .aide{color:var(--ink3);font-size:.85rem;margin-left:8px}
+.prog-jeux{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-top:14px} @media (max-width:760px){.prog-jeux{grid-template-columns:1fr}} .prog-jeu{min-width:0} .prog-jeu h3{margin:0 0 2px;font-size:1.05rem;display:flex;align-items:baseline;gap:10px} .prog-jeu h3 .compte{font:.82rem var(--mono);color:var(--ink3)} .prog-jeu .aide{margin:0 0 8px}
+.prog .bilan{margin:2px 0 8px;font-size:.95rem;color:var(--ink2)} .prog .bilan b{font:600 1.35rem var(--mono)} .prog .bilan span{color:var(--ink3);font:.85rem var(--mono);margin-right:6px} .prog .bilan b.ok{font-size:.95rem;color:var(--ok)} .prog .bilan b.ko{font-size:.95rem;color:var(--warn)}
+.prog .leg .dim{color:var(--ink3)} details.essais-d{margin-top:8px} details.essais-d summary{cursor:pointer;color:var(--ink3);font-size:.85rem;list-style:none} details.essais-d summary::before{content:'▸ '} details.essais-d[open] summary::before{content:'▾ '}
+.prog .tick{font-size:10.5px}
+.prog{padding:var(--pad);margin-bottom:22px} .prog h2{margin:0 0 4px} .prog .aide{color:var(--ink3);font-size:.85rem;margin:0 0 10px}
+.prog .prog3d{width:100%;height:680px} .prog svg{width:100%;height:auto;display:block} .prog .ax{stroke:var(--line);stroke-width:1} .prog .grid{stroke:var(--line);stroke-dasharray:2 4} .prog .val{font:600 10.5px var(--mono)} .prog .vit{fill:#3a4150;opacity:.55} .prog .vit-l{fill:var(--ink3);font:10px var(--mono)} .prog .vit-t{fill:var(--ink3)} .prog .lbl{fill:var(--ink3);font:11px var(--mono)} .prog .tick{fill:var(--ink2);font:11px var(--mono)}
+.prog .cible{stroke:var(--ok,#4c9);stroke-dasharray:6 4;stroke-width:1.2} .prog .cible-l{fill:var(--ok,#4c9);font:600 11px var(--mono)}
+.prog .pt{stroke-width:2.2;cursor:default} .prog .pt.creux{fill-opacity:.12} .prog .pt.plein{fill-opacity:.85} .prog .lien{fill:none;stroke-width:1.2;opacity:.45}
+.prog .leg{display:flex;flex-wrap:wrap;gap:6px 18px;font:.82rem var(--mono);color:var(--ink2);margin:4px 0 0} .prog .leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;border:2px solid currentColor}
+table.essais{width:100%;border-collapse:separate;border-spacing:0;margin-top:12px;font-size:.88rem;display:block;overflow-x:auto} table.essais th{text-align:left;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:8px 10px;border-bottom:1px solid var(--line);font-weight:600} table.essais td{padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap} table.essais tbody tr:last-child td{border-bottom:0} table.essais td.n{font:600 .9rem var(--mono)} table.essais td.note{font:600 1rem var(--mono)} table.essais td.dim{color:var(--ink3)} table.essais tbody tr:hover td{background:var(--card2)}
+.skip{position:absolute;left:-999px;top:8px;background:var(--run);color:#fff;padding:8px 12px;border-radius:6px;z-index:9} .skip:focus{left:8px}
+:focus-visible{outline:2px solid var(--run);outline-offset:2px}
+.jeux{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin:0 0 26px} @media (max-width:760px){.jeux{grid-template-columns:1fr}} .jeu{min-width:0} .jeu .tuiles{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px} .jeu .tuile{padding:12px 14px} .jeu .tuile .v{font-size:1.5rem} .jeu .tuile .d{font-size:.8rem} .jeu table.camp{display:block;overflow-x:auto} .jeu td.theme{max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.9rem} .jeu td.dif{display:none} .jeu th.dif{display:none} .jeu td.ouvrir{display:none} .jeu th.id{width:auto;font-size:.85rem} .jeu td.note{width:auto;padding:9px 10px} .jeu td.note .val{width:30px;margin-right:6px} .jeu td.note .bar{width:48px} .jeu table.camp th,.jeu table.camp td{padding-left:10px;padding-right:10px} .jeu h2{display:flex;align-items:baseline;gap:10px;margin:0 0 4px} .jeu h2 .compte{font:.85rem var(--mono);color:var(--ink3)} .jeu .aide{color:var(--ink3);font-size:.88rem;margin:0 0 12px}
+table.camp th.id a,table.camp td.id a{color:var(--ink);text-decoration:none} table.camp tbody tr:hover th,table.camp tbody tr:hover td{background:var(--card2)} table.camp tbody tr:focus-within th,table.camp tbody tr:focus-within td{background:var(--card2)}
+.actions label{display:inline-flex;flex-direction:column;gap:3px;font-size:.78rem;color:var(--ink3)} .actions label > *{font-size:.95rem;color:var(--ink)} .actions select,.actions input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+table.essais td a,.campagne .nom a{color:var(--ink);text-decoration:none} table.essais td a:hover,.campagne .nom a:hover{text-decoration:underline}
+.tuiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px}
+.tuile{padding:var(--pad)} .tuile .k{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px} .tuile .v{font:600 2rem/1.15 var(--mono)} .tuile .v small{font-size:1rem;color:var(--ink3);font-weight:400} .tuile .d{font-size:.9rem;color:var(--ink2);margin-top:4px}
+table.camp{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden}
+table.camp th{text-align:left;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:12px 16px;border-bottom:1px solid var(--line);font-weight:600;background:var(--card2)}
+table.camp td{padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:middle} table.camp tbody tr:last-child td{border-bottom:0} table.camp tbody tr:hover td{background:var(--card2);cursor:pointer}
+td.id,th.id{font:600 .95rem var(--mono);width:110px;white-space:nowrap;text-align:left} td.theme{color:var(--ink)} td.dif{color:var(--ink3);font-size:.9rem;white-space:nowrap;width:130px}
+td.note{width:170px;white-space:nowrap} td.note .val{font:600 1rem var(--mono);display:inline-block;width:38px;text-align:right;margin-right:10px} td.note .bar{display:inline-block;width:96px;height:8px;background:var(--line);border-radius:4px;vertical-align:middle;overflow:hidden} td.note .bar i{display:block;height:100%;background:var(--ok)}
+td.note.moyen .bar i{background:var(--warn)} td.note.bas .bar i{background:var(--bad)} td.note.panne span{color:var(--bad);font:600 .9rem var(--mono)} td.note.vide span{color:var(--ink3);font-size:.85rem}
+td.ouvrir{color:var(--ink3);font-size:.85rem;text-align:right;white-space:nowrap;width:80px}
+.actions{display:flex;gap:10px;margin:20px 0 0;flex-wrap:wrap;align-items:center} .actions button{font-size:.95rem;padding:10px 18px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer} .actions button.prim{background:var(--run);border-color:var(--run);color:#fff} .actions select,.actions input{font:inherit;font-size:.95rem;padding:9px 12px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px}
+.campagnes{display:flex;flex-direction:column;gap:10px} .campagne{padding:12px 16px;display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:center} .campagne .nom{font:600 .95rem var(--mono)} .campagne .meta{color:var(--ink3);font-size:.85rem} .campagne .bilan{font:.9rem var(--mono);color:var(--ink2)} .campagne .bilan b{color:var(--ink)}
+.entete{margin-bottom:18px}
+.kpis{display:flex;gap:10px;flex-wrap:wrap} .kpi{padding:10px 14px;min-width:96px} .kpi .k{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)} .kpi .v{font:600 1.25rem/1.2 var(--mono)} .kpi .v small{font-size:.85rem;color:var(--ink3);font-weight:400} .kpi.note .v{color:var(--ok)} .kpi.note.bas .v{color:var(--bad)} .kpi.note.moyen .v{color:var(--warn)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:24px;align-items:start}
+.col-tete{display:flex;flex-direction:column;gap:10px;margin-bottom:12px} .col-h{display:flex;align-items:center;justify-content:space-between;gap:12px} .col-h h3{margin:0;font-size:1.2rem} .col-h select{font:inherit;font-size:.85rem;padding:5px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink2);border-radius:6px}
+table.juge{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;font-size:.92rem}
+table.juge th{text-align:left;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600;background:var(--card2)}
+table.juge td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top} table.juge tbody tr:last-child td{border-bottom:0}
+table.juge td.e{font:600 .85rem var(--mono);color:var(--ink3);white-space:nowrap;width:44px} table.juge td.pts{font:600 1rem var(--mono);white-space:nowrap;width:80px} table.juge td.pts span{color:var(--ink3);font-weight:400;font-size:.85rem} table.juge td.pts b{color:var(--bad)}
+table.juge tr.ok td.pts{color:var(--ok)} table.juge tr.ko td.pts{color:var(--warn)} table.juge td.f{white-space:normal;color:var(--ink2);width:42%} table.juge td.f b{color:var(--ink)} .malus{color:var(--bad)}
+ul.crit{margin:0;padding-left:18px} ul.crit li{margin:3px 0} ul.crit li b{color:var(--ink3);font-weight:600}
+details.doc{margin-bottom:8px} details.doc summary{padding:12px 16px;cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between} details.doc summary span{color:var(--ink3);font-weight:400;font:.85rem var(--mono)} details.doc pre{margin:0;padding:0 16px 16px;font:.85rem/1.5 var(--mono);color:var(--ink2);white-space:pre-wrap;max-height:420px;overflow:auto}
+.transcript{display:flex;flex-direction:column;gap:10px} .msg{padding:10px 14px} .msg.vers{border-left:3px solid var(--run)} .msg.de{border-left:3px solid var(--ok)} .msg .qui{font:600 .85rem var(--mono);color:var(--ink2);margin-bottom:6px;display:flex;gap:10px} .msg .qui span{color:var(--ink3);font-weight:400;margin-left:auto} .msg pre{margin:0;font:.85rem/1.5 var(--mono);color:var(--ink);white-space:pre-wrap;max-height:520px;overflow:auto}
+.msg details.plus > summary{cursor:pointer;list-style:none;font:.85rem/1.5 var(--mono);color:var(--ink);white-space:pre-wrap} .msg details.plus[open] > summary{display:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)} .note-bas{color:var(--ink3);font-size:.88rem;margin-top:8px} .vide-msg{color:var(--ink3);padding:30px;text-align:center}
+.pill{display:inline-block;font:.75rem var(--mono);padding:2px 8px;border-radius:10px;background:var(--card2);color:var(--ink2);margin-left:6px}
+</style></head><body>
+<a class="skip" href="#main">Aller au contenu</a>
+<div class="top">
+  <span class="logo">FLUX</span>
+  <nav class="fil" id="fil" aria-label="Fil d’Ariane"><a href="#/">Workflows</a></nav>
+  <span class="droite"><span id="tourne"><span class="pastille"></span>rien ne tourne</span><a class="btn" href="/ancienne?wf=agenda" title="L’ancienne console, run par run">ancienne console</a></span>
+</div>
+<main id="main">
+<section class="ecran" id="e-workflows"><h1>Workflows</h1><p class="sous">Un workflow = une suite d’étapes qu’on fait jouer à une IA, mesurée sur des jeux de cas (entraînement, évaluation, test final).</p><div class="wfs" id="wfs"></div></section>
+<section class="ecran" id="e-campagne"></section>
+<section class="ecran" id="e-cas"></section>
+</main>
+<script>
+const $=s=>document.querySelector(s); const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const LOTS={defi:'évaluation',boucle:'entraînement',sentinelle:'sentinelle'};
+const CASE={action_type:'type d’événement',date_debut:'date',heure_debut:'heure',fin:'heure de fin',lieu:'lieu',lien:'lien',reference:'référence',montant_euros:'montant',documents:'documents'};
+const TYP={rendez_vous:'rendez-vous',echeance:'échéance',periode:'période'}; const ACT={creer:'',annuler:'annuler '};
+let CACHE={};
+async function api(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(u+' → '+r.status);return r.json();}
+function go(h){location.hash=h;}
+function fil(parts){$('#fil').innerHTML=parts.map((p,i)=>i<parts.length-1?`<a href="${p[1]}">${esc(p[0])}</a><span class="sep">›</span>`:`<b>${esc(p[0])}</b>`).join('');}
+function montrer(id){document.querySelectorAll('.ecran').forEach(s=>s.classList.toggle('actif',s.id==='e-'+id));window.scrollTo(0,0);}
+function modLib(m){return String(m||'').replace(/^llamacpp:/,'').replace(/^ollama:/,'')+(String(m||'').startsWith('llamacpp:')?' <span class="pill">llama.cpp</span>':String(m||'').startsWith('ollama:')?' <span class="pill">ollama</span>':'');}
+function cellNote(r){ if(!r) return '<td class="note vide"><span>pas joué</span></td>'; if(r.score==null) return `<td class="note panne" title="${esc(r.panne||r.fin||'')}"><span>panne</span></td>`; const s=r.score, pct=s/(r.bareme||72)*100, cls=s>=66?'haut':s>=45?'moyen':'bas'; return `<td class="note ${cls}"><span class="val">${s}</span><span class="bar" aria-hidden="true"><i style="width:${pct.toFixed(0)}%"></i></span></td>`; }
+function lisible(f){ return f.split(' ; ').map(x=>{const m=x.trim().match(/^(\w+) (\w+) \((.*?) -> (.*?)\)( -1)?$/); if(!m) return esc(x); const [,c,v,a,o,mal]=m; const C=CASE[c]||c, val=s=>{s=s.trim().replace(/^'|'$/g,'').trim();return s===''?'<i>vide</i>':esc(s)}; let t; if(v==='INVENTE') t=`<b>${C}</b> inventé : ${val(o)} alors que le mail n’en donne pas`; else if(v==='OUBLI') t=`<b>${C}</b> oublié : il fallait ${val(a)}`; else t=`<b>${C}</b> ${v==='FAUX'?'faux':v==='PARTIEL'?'incomplet':v.toLowerCase()} : ${val(o)} au lieu de ${val(a)}`; if(mal) t+=' <span class="malus">(−1 pour l’invention)</span>'; return t;}).map(t=>'<li>'+t+'</li>').join(''); }
+function etiq(t){const m=String(t).trim().match(/^(creer|annuler) (rendez_vous|echeance|periode) (\d{4})-(\d{2})-(\d{2}) (.*)$/); if(!m) return esc(t); const [,a,ty,y,mo,d,titre]=m; return `${ACT[a]}${TYP[ty]} du ${+d}/${+mo} — ${esc(titre)}`;}
+function tableJuge(note){ if(!note||!note.lignes) return '<p class="note-bas">pas de note (production, ou panne)</p>'; let rows='',plancher=''; for(const l of note.lignes){ if(l.startsWith('plancher')){const m=l.match(/plancher (\d+)/); plancher=m?`Une réponse vide aurait eu ${m[1]} : c’est le plancher de ce cas.`:l; continue;} const m=l.match(/^\[(E\d|E\+)\] (\d+)\/(\d+)( -\d+)? \| attendu : (.*?) \| obtenu : (.*?) \| (.*)$/); if(!m) continue; const [,e,pts,sur,mal,att,obt,fautes]=m; const ok=/toutes cases OK|^OK$/.test(fautes); rows+=`<tr class="${ok?'ok':'ko'}"><td class="e">${e}</td><td class="pts">${pts}<span>/${sur}</span>${mal?' <b>'+mal.trim()+'</b>':''}</td><td><ul class="crit"><li><b>attendu :</b> ${att?etiq(att):'<i>rien</i>'}</li><li><b>rendu :</b> ${obt?etiq(obt):'<i>rien</i>'}</li></ul></td><td class="f">${ok?'<ul class="crit"><li>rien, tout est juste</li></ul>':'<ul class="crit">'+lisible(fautes)+'</ul>'}</td></tr>`; } return `<table class="juge"><thead><tr><th>Événement</th><th>Points</th><th>Critères</th><th>Ce qui a coûté des points</th></tr></thead><tbody>${rows}</tbody></table><p class="note-bas">${esc(plancher)}</p>`; }
+
+async function ecranWorkflows(){ return ecranWorkflowsFamilles(); }
+function versionLib(id,base){ const m=String(id).match(/-v(\d+)$/); return m?'v'+m[1]:(id===base?'v2':id.slice(base.length+1)); }
+async function ecranWorkflowsFamilles(){ fil([['Workflows','#/']]); montrer('workflows'); const box=$('#wfs'); box.innerHTML='<p class="note-bas">chargement…</p>'; const wfs=await api('/api/workflows');
+  const infos={}; await Promise.all(wfs.map(async w=>{ let c={runs:[],campagnes:[],cas:[],workflow:{}}; try{ c=await api(`/api/wf/${w.id}/campagnes`);}catch{} infos[w.id]={w,c}; }));
+  const fams={}; for(const w of wfs){ const b=baseWf(w.id); (fams[b]=fams[b]||[]).push(w.id); }
+  const cartes=[], vides=[];
+  for(const [base,ids] of Object.entries(fams)){ ids.sort((a,b)=>versionLib(a,base).localeCompare(versionLib(b,base),undefined,{numeric:true}));
+    const tete=infos[base]||infos[ids[0]]; const total=ids.reduce((n,id)=>n+infos[id].c.runs.length,0);
+    const der=ids.map(id=>infos[id].c.runs[0]).filter(Boolean).map(r=>r.ouvert||'').sort().pop();
+    const versions=ids.map(id=>{const {w,c}=infos[id]; const camps=(c.campagnes||[]).filter(x=>x.fin&&x.bilan); const last=camps[0]; const meilleur=last?Object.values(last.bilan).map(b=>b.moyenne).sort((a,b)=>b-a)[0]:null; return `<a class="version" href="#/wf/${id}"><b>${esc(versionLib(id,base))}</b>${id===base&&ids.length>1?' <span class="pill">production</span>':''}<span class="d">${w.nodes} étape${w.nodes>1?'s':''} · ${c.runs.length} run${c.runs.length>1?'s':''}${meilleur!=null?' · dernière campagne <b>'+meilleur+'</b>/72':''}</span></a>`;}).join('');
+    const html=`<div class="wf fam"><h3>${esc((tete.w.name||base).replace(/\s*\((v\d+|version)[^)]*\)\s*$/,''))}</h3><p>${esc(tete.c.workflow?tete.c.workflow.description:'')}</p><div class="chiffres"><span><b>${ids.length}</b> version${ids.length>1?'s':''} de consignes</span><span><b>${tete.c.cas.length}</b> cas</span><span><b>${total}</b> runs</span>${der?`<span>dernière : <b>${esc(der.slice(0,16).replace('T',' '))}</b></span>`:''}</div><div class="versions">${versions}</div></div>`;
+    (total?cartes:vides).push(html); }
+  box.classList.remove('wfs'); box.innerHTML=`<div class="wfs">${cartes.join('')}</div>`+(vides.length?`<h2 class="sect">Pas encore joués</h2><div class="wfs muets">${vides.join('')}</div>`:''); }
+
+function derniere(runs,cas,modele){ return runs.filter(r=>r.cas===cas&&r.modele===modele&&r.mode==='banc').sort((a,b)=>String(b.ouvert).localeCompare(String(a.ouvert)))[0]; }
+const PAL=['#5b9cf6','#f6a35b','#8ed36b','#e26bd3','#f6e05b','#6bd3d3','#c98bff','#ff7f7f'];
+function baseWf(id){ return String(id).replace(/-v\d+$/,''); }
+function versionDe(id){ const m=String(id).match(/-v(\d+)$/); return m?'v'+m[1]:'v2'; }
+function modTxt(m){ return String(m||'').replace(/^(llamacpp|ollama):/,''); }
+function dessiner3d(el,pts,modeles,coul,cible){
+  const traces=[];
+  for(const m of modeles){ const ps=pts.filter(p=>p.modele===m);
+    for(const lot of ['defi','boucle']){ const q=ps.filter(p=>p.lot===lot); if(!q.length) continue;
+      traces.push({type:'scatter3d',mode:'markers',name:modTxt(m)+' · '+(LOTS[lot]||lot),legendgroup:m,
+        x:q.map(p=>p.i),y:q.map(p=>p.s),z:q.map(p=>p.note),hoverinfo:'text',
+        text:q.map(p=>`essai ${p.i} · ${p.nom}<br>${p.version} · ${LOTS[p.lot]||p.lot} · ${modTxt(p.modele)}<br>note ${p.note}/72 · ${p.s} s par mail · ${p.n} cas${p.pannes?' · '+p.pannes+' panne(s)':''}`),
+        marker:{size:7,color:coul(m),symbol:lot==='defi'?'circle':'circle-open',line:{color:coul(m),width:2}}}); }
+    if(ps.length>1) traces.push({type:'scatter3d',mode:'lines',showlegend:false,hoverinfo:'skip',legendgroup:m,x:ps.map(p=>p.i),y:ps.map(p=>p.s),z:ps.map(p=>p.note),line:{color:coul(m),width:3},opacity:.5}); }
+  for(const p of pts) traces.push({type:'scatter3d',mode:'lines',showlegend:false,hoverinfo:'skip',x:[p.i,p.i],y:[p.s,p.s],z:[0,p.note],line:{color:coul(p.modele),width:1.5},opacity:.3});
+  const xs=pts.map(p=>p.i),ys=pts.map(p=>p.s); const x0=Math.min(...xs)-.5,x1=Math.max(...xs)+.5,y0=0,y1=Math.max(4,...ys)*1.1+1;
+  if(cible) traces.push({type:'mesh3d',name:'cible '+cible,showlegend:true,hoverinfo:'skip',x:[x0,x1,x1,x0],y:[y0,y0,y1,y1],z:[cible,cible,cible,cible],i:[0,0],j:[1,2],k:[2,3],color:'#3fb27f',opacity:.18});
+  const ax={gridcolor:'#2a2f37',zerolinecolor:'#2a2f37',color:'#aab0b8',showbackground:true};
+  const layout={paper_bgcolor:'rgba(0,0,0,0)',margin:{l:0,r:0,t:0,b:0},font:{family:'ui-monospace,Consolas,monospace',color:'#aab0b8',size:11},legend:{orientation:'h',y:0,x:0,bgcolor:'rgba(0,0,0,0)'},
+    scene:{bgcolor:'rgba(0,0,0,0)',camera:{eye:{x:1.35,y:-1.65,z:.7},center:{x:0,y:0,z:-.08}},aspectmode:'manual',aspectratio:{x:2.1,y:1,z:.95},
+      xaxis:{...ax,title:'essais',tickvals:pts.map(p=>p.i),ticktext:pts.map(p=>p.i+' '+p.version),backgroundcolor:'#171a1f',range:[x0,x1]},
+      yaxis:{...ax,title:'vitesse (s par mail)',backgroundcolor:'#171a1f',range:[y0,y1]},
+      zaxis:{...ax,title:'qualité (note /72)',range:[0,72],tickvals:[0,18,36,54,72],backgroundcolor:'#1e2229'}}};
+  Plotly.newPlot(el,traces,layout,{displayModeBar:false,responsive:true});
+}
+async function progression(wf,d){
+  const box=$('#progression'); if(!box) return;
+  box.innerHTML='<div class="carte prog"><h2>Progression des essais</h2><p class="aide">chargement…</p></div>';
+  let wfs=[]; try{ wfs=await api('/api/workflows'); }catch{ return; }
+  const freres=wfs.map(w=>w.id).filter(id=>baseWf(id)===baseWf(wf));
+  const tous=[];
+  await Promise.all(freres.map(async id=>{ let c=id===wf?d:null; if(!c){ try{ c=await api(`/api/wf/${id}/campagnes`);}catch{ return; } }
+    for(const camp of (c.campagnes||[])){ if(!camp.fin) continue; for(const [m,b] of Object.entries(camp.bilan||{})){ if(b.moyenne==null||!b.n) continue; tous.push({t:camp.debut||'',wf:id,version:versionDe(id),nom:camp.nom,lot:camp.lot,modele:m,note:b.moyenne,s:b.s_par_mail||0,n:b.n,pannes:b.pannes||0,md5:camp.consignes_md5||''}); } } }));
+  tous.sort((a,b)=>String(a.t).localeCompare(String(b.t)));
+  if(!tous.length){ box.innerHTML=''; return; }
+  const modeles=[...new Set(tous.map(p=>p.modele))]; const coul=m=>PAL[modeles.indexOf(m)%PAL.length];
+  const cible=(d.workflow||{}).cible||null;
+  const AIDE={boucle:'les consignes se règlent sur ces mails : une note ici ne prouve rien encore.',defi:'mails jamais vus pendant le réglage : c’est cette note qui compte.'};
+  const panneau=lot=>{ const pts=tous.filter(p=>p.lot===lot); pts.forEach((p,i)=>p.i=i+1);
+    if(!pts.length) return `<section class="prog-jeu" aria-labelledby="pj-${lot}"><h3 id="pj-${lot}">${LOTS[lot]||lot}</h3><p class="aide">${AIDE[lot]||''}</p><p class="note-bas">aucune campagne jouée sur ce jeu.</p></section>`;
+    const W=700,L=52,R=56,T=30,HQ=230,B=44, H=T+HQ+B, iw=W-L-R, N=pts.length;
+    const X=i=>L+24+(N===1?(iw-48)/2:(i-1)*(iw-48)/(N-1)); const YQ=n=>T+HQ-(n/72)*HQ;
+    const smax=Math.max(5,Math.ceil(Math.max(...pts.map(p=>p.s))/5)*5); const YV=s=>T+HQ-(s/smax)*HQ;
+    let g='';
+    for(const p of pts) g+=`<rect class="vit" x="${X(p.i)-8}" y="${YV(p.s)}" width="16" height="${(YV(0)-YV(p.s)).toFixed(1)}"><title>essai ${p.i} · ${p.s} s par mail</title></rect>`;
+    for(const n of [0,36,72]) g+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${YQ(n)}" y2="${YQ(n)}"/><text class="tick" x="${L-8}" y="${YQ(n)+4}" text-anchor="end">${n}</text>`;
+    for(const s of [smax]) g+=`<text class="tick vit-t" x="${W-R+8}" y="${YV(s)+4}">${s} s</text>`;
+    if(cible) g+=`<line class="cible" x1="${L}" x2="${W-R}" y1="${YQ(cible)}" y2="${YQ(cible)}"/><text class="cible-l" x="${W-R-4}" y="${YQ(cible)-5}" text-anchor="end">cible ${cible}</text>`;
+    g+=`<line class="ax" x1="${L}" x2="${W-R}" y1="${YQ(0)}" y2="${YQ(0)}"/><line class="ax" x1="${L}" x2="${L}" y1="${T}" y2="${YQ(0)}"/><line class="ax" x1="${W-R}" x2="${W-R}" y1="${T}" y2="${YQ(0)}"/>`;
+    g+=`<text class="lbl" x="${L-8}" y="${T-12}">note /72</text><text class="lbl" x="${W-R+8}" y="${T-12}" text-anchor="end">s / mail</text>`;
+    for(const p of pts) g+=`<text class="tick" x="${X(p.i)}" y="${YQ(0)+18}" text-anchor="middle">${esc(p.version)}</text>`;
+    for(const m of modeles){ const ps=pts.filter(p=>p.modele===m); if(ps.length>1) g+=`<polyline class="lien" stroke="${coul(m)}" points="${ps.map(p=>X(p.i)+','+YQ(p.note)).join(' ')}"/>`; }
+    for(const p of pts) g+=`<circle class="pt plein" cx="${X(p.i)}" cy="${YQ(p.note)}" r="${p.i===N?7:4.5}" fill="${coul(p.modele)}" stroke="${coul(p.modele)}"><title>essai ${p.i} · ${esc(p.nom)}\n${esc(p.version)} · ${esc(modTxt(p.modele))}\nnote ${p.note}/72 · ${p.s} s par mail · ${p.n} cas${p.pannes?' · '+p.pannes+' panne(s)':''}</title></circle>${p.i===N?`<text class="val" x="${X(p.i)}" y="${YQ(p.note)-12}" text-anchor="middle" fill="${coul(p.modele)}">${p.note}</text>`:''}`;
+    const der=pts[N-1]; const ecart=cible?(der.note-cible):null; const bilan=`<p class="bilan"><b style="color:${coul(der.modele)}">${der.note}</b><span>/72</span> au dernier essai (${esc(modTxt(der.modele))}, ${esc(der.version)}) · ${der.s} s par mail${ecart!=null?` · <b class="${ecart>=0?'ok':'ko'}">${ecart>=0?'cible atteinte':'à '+(-ecart).toFixed(1)+' de la cible'}</b>`:''}</p>`;
+    const rows=pts.slice().reverse().map(p=>`<tr><td class="n">${p.i}</td><td class="dim">${esc((p.t||'').slice(5,16).replace('T',' '))}</td><td>${esc(p.version)}</td><td class="dim"><a href="#/wf/${esc(p.wf)}/lot/${esc(p.lot)}">${esc(p.nom)}</a></td><td>${modLib(p.modele)}</td><td class="note" style="color:${coul(p.modele)}">${p.note}</td><td>${p.s} s</td><td class="dim">${p.n} cas${p.pannes?' · '+p.pannes+' panne':''}</td></tr>`).join('');
+    return `<section class="prog-jeu" aria-labelledby="pj-${lot}"><h3 id="pj-${lot}">${LOTS[lot]||lot} <span class="compte">${pts.length} essai${pts.length>1?'s':''}</span></h3>${bilan}<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="pt-${lot}"><title id="pt-${lot}">Progression sur le jeu ${LOTS[lot]||lot} : qualité (note sur 72) et vitesse (secondes par mail) pour chaque essai ; les valeurs sont dans la liste qui suit.</title>${g}</svg><details class="essais-d"><summary>les ${pts.length} essai${pts.length>1?'s':''}, du plus récent au plus ancien</summary><table class="essais"><caption class="sr">Les essais sur le jeu ${LOTS[lot]||lot}, du plus récent au plus ancien</caption><thead><tr><th scope="col">#</th><th scope="col">Quand</th><th scope="col">Consignes</th><th scope="col">Campagne</th><th scope="col">Modèle</th><th scope="col">Note /72</th><th scope="col">Vitesse</th><th scope="col">Cas</th></tr></thead><tbody>${rows}</tbody></table></details></section>`; };
+  const leg=modeles.map(m=>`<span style="color:${coul(m)}"><i style="background:${coul(m)}"></i>${esc(modTxt(m))}</span>`).join('')+`<span class="dim"><i style="border-radius:2px;border-color:#3a4150;background:#3a4150"></i>vitesse (s par mail)</span>`;
+  box.innerHTML=`<div class="carte prog"><h2>Progression des essais</h2><p class="aide">Un essai = une campagne jouée. La courbe doit rejoindre la ligne verte (cible ${cible||'—'}).</p><div class="leg">${leg}</div><div class="prog-jeux">${panneau('boucle')}${panneau('defi')}</div></div>`;
+}
+async function ecranCampagne(wf,lotCible){ const d=await api(`/api/wf/${wf}/campagnes`); CACHE[wf]=d; fil([['Workflows','#/'],[d.workflow.name,'#/wf/'+wf]]); montrer('campagne');
+  const lots=[...new Set(d.cas.map(c=>c.lot))].filter(l=>l!=='sentinelle').sort((a,b)=>(a==='boucle'?0:1)-(b==='boucle'?0:1));
+  const AIDE={boucle:'les mails sur lesquels les consignes se règlent : une bonne note ici ne prouve rien encore.',defi:'des mails jamais vus pendant le réglage : c’est cette note qui compte.'};
+  const sections=lots.map(lot=>{ const cas=d.cas.filter(c=>c.lot===lot);
+    const modeles=[...new Set(d.runs.filter(r=>r.mode==='banc'&&cas.some(c=>c.id===r.cas)).map(r=>r.modele))].filter(Boolean).sort((a,b)=>(a.includes('opus')?-1:1)-(b.includes('opus')?-1:1)||a.localeCompare(b));
+    const grille={}; for(const m of modeles){ grille[m]={}; for(const c of cas) grille[m][c.id]=derniere(d.runs,c.id,m); }
+    const tuiles=modeles.map(m=>{const rs=cas.map(c=>grille[m][c.id]).filter(Boolean); const ok=rs.filter(r=>r.score!=null); const moy=ok.length?ok.reduce((s,r)=>s+r.score,0)/ok.length:null; const spm=ok.length?ok.reduce((s,r)=>s+(r.duree_s||0),0)/ok.length:0; return `<div class="tuile"><div class="k">${modLib(m)} — note moyenne</div><div class="v">${moy==null?'—':moy.toFixed(1)}<small> /72</small></div><div class="d">moyenne de ${ok.length} cas · ${rs.length-ok.length} panne${rs.length-ok.length>1?'s':''} · ${spm.toFixed(1)} s par mail</div></div>`;}).join('');
+    const rows=cas.map(c=>`<tr><th scope="row" class="id"><a href="#/wf/${wf}/cas/${c.id}">${esc(c.id)}</a></th><td class="theme" title="${esc(c.theme)}${c.difficulte?' · '+esc(c.difficulte):''}">${esc(c.theme)}</td><td class="dif">${esc(c.difficulte||'')}</td>${modeles.map(m=>cellNote(grille[m][c.id])).join('')}<td class="ouvrir" aria-hidden="true">ouvrir ›</td></tr>`).join('');
+    const table=modeles.length?`<table class="camp"><caption class="sr">Notes par cas et par modèle, ${LOTS[lot]||lot}</caption><thead><tr><th scope="col">Cas</th><th scope="col">Thème</th><th scope="col" class="dif">Difficulté</th>${modeles.map(m=>`<th scope="col">${modLib(m)}</th>`).join('')}<th scope="col"><span class="sr">ouvrir</span></th></tr></thead><tbody>${rows}</tbody></table>`:'<p class="note-bas">aucune run de banc sur ce jeu.</p>';
+    return `<section class="jeu" id="jeu-${lot}" aria-labelledby="h-${lot}"><h2 id="h-${lot}">${LOTS[lot]||lot} <span class="compte">${cas.length} cas</span></h2><p class="aide">${AIDE[lot]||''}</p><div class="tuiles">${tuiles||''}</div>${table}</section>`; }).join('');
+  const camps=d.campagnes.map(c=>`<div class="carte campagne"><div><div class="nom"><a href="#/wf/${wf}/lot/${esc(c.lot)}">${esc(c.nom)}</a></div><div class="meta">${esc(LOTS[c.lot]||c.lot)} · ${c.runs.length} runs · consignes ${esc(c.consignes_md5||'')} · ${esc((c.debut||'').slice(0,16).replace('T',' '))}${c.fin?'':' · en cours'}</div></div><div class="bilan">${Object.entries(c.bilan||{}).map(([m,b])=>`${modLib(m)} <b>${b.moyenne}</b>/72 · ${b.s_par_mail} s${b.pannes?' · '+b.pannes+' panne':''}`).join('<br>')}</div></div>`).join('')||'<p class="note-bas">aucune campagne jouée par tools/jouer-lot.py pour ce workflow.</p>';
+  $('#e-campagne').innerHTML=`<h1>${esc(d.workflow.name)}</h1><p class="sous">${esc(d.workflow.description)}</p>
+    <div id="progression"></div>
+    <div class="jeux">${sections}</div>
+    <div class="actions"><label>jeu<select id="lot-in">${lots.map(l=>`<option value="${l}">${LOTS[l]||l}</option>`).join('')}</select></label><label>modèles<input id="modeles-in" placeholder="opus, llamacpp:qwen3-4b" size="30"></label><label>nom de la campagne<input id="nom-in" placeholder="facultatif" size="22"></label><button class="prim" id="jouer">Jouer</button><span class="note-bas" id="jouer-msg" role="status" aria-live="polite"></span></div>
+    <h2>Campagnes</h2><div class="campagnes">${camps}</div>`;
+  progression(wf,d);
+  if(lotCible){ const el=document.getElementById('jeu-'+lotCible); if(el) el.scrollIntoView({block:'start'}); }
+  $('#jouer').onclick=async()=>{const mod=$('#modeles-in').value.trim(); const lot=$('#lot-in').value; if(!mod){$('#jouer-msg').textContent='indique au moins un modèle';return;} $('#jouer').disabled=true; try{const r=await fetch(`/api/wf/${wf}/campagne`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lot,modeles:mod,nom:$('#nom-in').value.trim()})}); const j=await r.json(); $('#jouer-msg').textContent=j.error||('lancée : '+j.nom+' — la page se rafraîchit toute seule');}catch(e){$('#jouer-msg').textContent=String(e);} $('#jouer').disabled=false;};
+}
+async function ecranCas(wf,cas){ const d=CACHE[wf]||await api(`/api/wf/${wf}/campagnes`); CACHE[wf]=d; const c=d.cas.find(x=>x.id===cas)||{id:cas}; fil([['Workflows','#/'],[d.workflow.name,'#/wf/'+wf],[cas,'#/wf/'+wf+'/cas/'+cas]]); montrer('cas');
+  const runs=d.runs.filter(r=>r.cas===cas&&r.mode==='banc'); const modeles=[...new Set(runs.map(r=>r.modele))].filter(Boolean).sort((a,b)=>(a.includes('opus')?-1:1)-(b.includes('opus')?-1:1)||a.localeCompare(b));
+  $('#e-cas').innerHTML=`<div class="entete"><h1>${esc(cas)}${c.theme?' — '+esc(c.theme):''}</h1><p class="sous">${esc(c.difficulte||'')}${c.messages?' · '+c.messages+' messages':''} · ${esc(LOTS[c.lot]||c.lot||'')} · ${modeles.length} modèle${modeles.length>1?'s':''}, même mail, même juge</p></div><details class="doc" id="mail-doc"><summary>le mail <span id="mail-meta"></span></summary><pre id="mail-pre">…</pre></details><h2>Détail de la note, modèle par modèle — ce qui était attendu, ce qui a été rendu</h2><div class="cols" id="cols">${modeles.length?'':'<p class="vide-msg">aucune run de banc sur ce cas.</p>'}</div>`;
+  let mailFait=false;
+  for(const m of modeles){ const rs=runs.filter(r=>r.modele===m).sort((a,b)=>String(b.ouvert).localeCompare(String(a.ouvert))); const col=document.createElement('div'); col.className='col'; col.innerHTML='<div class="col-tete"><div class="col-h"><h3>'+modLib(m)+'</h3><select></select></div><div class="kpis"></div></div><div class="juge-box"><p class="note-bas">chargement…</p></div><h2>Transcript</h2><div class="transcript"></div>'; $('#cols').appendChild(col); const sel=col.querySelector('select'); sel.innerHTML=rs.map((r,i)=>`<option value="${esc(r.run)}">${(r.ouvert||'').slice(5,16).replace('T',' ')} · ${r.score==null?'panne':r.score+'/72'}${i===0?' (dernière)':''}</option>`).join('');
+    const charger=async run=>{ try { const r=rs.find(x=>x.run===run); const p=await api(`/api/wf/${wf}/passe-fichiers?run=${encodeURIComponent(run)}`); const note=p.passe.note; const mes=p.passe.mesures||{}; const s=note?note.score:null; const cls=s==null?'bas':s>=66?'':s>=45?'moyen':'bas'; col.querySelector('.kpis').innerHTML=`<div class="kpi note ${cls}"><div class="k">Note</div><div class="v">${s==null?'panne':s}<small> /72</small></div></div><div class="kpi"><div class="k">Durée</div><div class="v">${(mes.duree_s||0).toFixed(0)} s</div></div><div class="kpi"><div class="k">Jetons</div><div class="v">${((mes.jetons_entree||0)/1000).toFixed(0)} k</div></div><div class="kpi"><div class="k">Essais</div><div class="v">${(p.passe.essais||[]).length||1}</div></div>`; col.querySelector('.juge-box').innerHTML=tableJuge(note)+(p.passe.panne?`<p class="note-bas">panne : ${esc(p.passe.panne.constat||p.passe.panne.cause)}</p>`:''); const f=p.fichiers; const reps=Object.keys(f).filter(k=>/^reponse-/.test(k)); const tete=(f['prompt.md']||'').split('\n').slice(0,14).join('\n'); col.querySelector('.transcript').innerHTML=`<div class="msg vers"><div class="qui">flux → ${modLib(m)} <span>prompt.md · ${((f['prompt.md']||'').length/1000).toFixed(1)} k car. · consignes + mail</span></div><details class="plus"><summary>${esc(tete)}\n… (voir tout)</summary><pre>${esc(f['prompt.md']||'')}</pre></details></div>`+reps.map(k=>`<div class="msg de"><div class="qui">${modLib(m)} → flux <span>${k} · ${((f[k]||'').length/1000).toFixed(1)} k car. · réponse brute</span></div><pre>${esc(f[k]||'')}</pre></div>`).join('')+(reps.length?'':'<p class="note-bas">aucune réponse enregistrée.</p>'); if(!mailFait&&p.entree.contenu){mailFait=true;$('#mail-pre').textContent=p.entree.contenu;$('#mail-meta').textContent=`${p.entree.nom} · ${(p.entree.contenu.length/1000).toFixed(1)} k car.`;} } catch(e){ col.querySelector('.juge-box').innerHTML=`<p class="note-bas">erreur de chargement : ${esc(e.message)} — <a href="#" class="re">réessayer</a></p>`; col.querySelector('.re').onclick=ev=>{ev.preventDefault();charger(run);}; } };
+    sel.onchange=()=>charger(sel.value); if(rs[0]) await charger(rs[0].run); }
+}
+async function router(){ const h=location.hash||'#/'; let m; try{ if((m=h.match(/^#\/wf\/([\w-]+)\/cas\/([\w.-]+)$/))) await ecranCas(m[1],m[2]); else if((m=h.match(/^#\/wf\/([\w-]+)(?:\/lot\/([\w-]+))?$/))) await ecranCampagne(m[1],m[2]); else await ecranWorkflows(); }catch(e){ $('#e-campagne').innerHTML='<p class="vide-msg">'+esc(e.message)+'</p>'; montrer('campagne'); } }
+window.addEventListener('hashchange',router); router();
+setInterval(async()=>{ try{ const wfs=await api('/api/workflows'); let actif=false; for(const w of wfs){ const d=await api('/api/wf/'+w.id); if(d.actif||d.en_cours) actif=true; } $('#tourne').innerHTML=`<span class="pastille ${actif?'on':''}"></span>${actif?'une run tourne':'rien ne tourne'}`; }catch{} }, 15000);
+</script>
+</body></html>

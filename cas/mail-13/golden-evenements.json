@@ -1,0 +1,38 @@
+{
+  "date_du_message": "2026-11-12",
+  "evenements": [
+    {
+      "action": "creer",
+      "type": "echeance",
+      "titre": "Confirmer la rencontre parents-professeurs sur le portail Familles",
+      "date_debut": "2026-11-14",
+      "heure_debut": "",
+      "date_fin": "",
+      "heure_fin": "",
+      "lieu": "",
+      "lien": "https://portail.clg-bellevue.example.fr/rencontres",
+      "reference": "RPP-2026-0471",
+      "montant_euros": 0,
+      "documents": [],
+      "notes": "code d'accès de l'établissement : 4720"
+    },
+    {
+      "action": "creer",
+      "type": "rendez_vous",
+      "titre": "Rencontre parents-professeurs — Léa (5e B), Mme Rieux",
+      "date_debut": "2026-11-21",
+      "heure_debut": "09:20",
+      "date_fin": "",
+      "heure_fin": "09:32",
+      "lieu": "salle 214",
+      "lien": "",
+      "reference": "RPP-2026-0471",
+      "montant_euros": 0,
+      "documents": [
+        "carnet",
+        "releve"
+      ],
+      "notes": "arriver cinq minutes avant ; accueil par la grille du 4 avenue des Érables ; aucun créneau pour Tom"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+flux
+Copyright 2026 Anthony Hunt
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+Documentation, graph descriptions and the example cases under cas/ are licensed
+under the Creative Commons Attribution 4.0 International license (see LICENSE-docs).
+
+This product includes third-party software:
+
+  xterm.js 5.5.0 (public/vendor/xterm.js, public/vendor/xterm.css)
+  Copyright (c) 2017-2019, The xterm.js authors
+  Copyright (c) 2014-2016, SourceLair Private Company
+  Copyright (c) 2012-2013, Christopher Jeffrey
+  Licensed under the MIT License (see public/vendor/LICENSE-xterm).
