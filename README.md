@@ -37,7 +37,7 @@ pipeline). Those pipelines live in their own repositories and use flux as a depe
 - Linux or macOS, Python ≥ 3.10, Node.js ≥ 18, `tmux`, `git`.
 - Python package: `jsonschema` (graph checker). Everything else is the standard library.
 - For agent steps (engine `tmux`) and Anthropic models (engine `api`):
-  [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and logged in. Claude Code
+  [Claude Code](https://code.claude.com/docs/en/overview) installed and logged in. Claude Code
   is a separate product, subject to Anthropic's terms; flux only calls it. Run `claude` once by hand
   (theme, login) before the first agent step: an agent session left on the first-run screens never
   starts working and ends as a failure.
@@ -130,3 +130,7 @@ variables) is described in `docs/interface.md`.
 - Third party: xterm.js 5.5.0 (MIT, `public/vendor/LICENSE-xterm`). Test tools: puppeteer
   (Apache 2.0). Runtime dependencies (not included): jsonschema (MIT), Claude Code
   (Anthropic commercial terms), Ollama and llama.cpp (MIT).
+
+---
+
+**Anthony Hunt** · [Project page on ingevision.cloud](https://ingevision.cloud/?lang=en&p=flux) · [LinkedIn](https://www.linkedin.com/in/anthony-hunt-3948a9196) · [GitHub profile](https://github.com/anthohunt)
