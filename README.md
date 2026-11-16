@@ -2,7 +2,7 @@
 
 # flux
 
-**Plays a pipeline of AI agents step by step and scores every step with a script, to keep the smallest model that still does the job.**
+**Runs a pipeline of AI agents step by step and scores every step with a script, to keep the smallest model that still does the job.**
 
 [![The console: three Claude models scored on seven invented e-mails, then a new e-mail processed live and saved as a bench case (click for the full video)](docs/demo.gif)](https://drive.google.com/file/d/19VzTHBvsJCijUQQzpf5rDuJZf5ZfLpIr/view)
 
@@ -12,9 +12,9 @@
 
 - **Graph.** A workflow is a JSON file. Each step names its input, its deliverables, its model and its judge; the graph checker refuses a step without them.
 - **Two engines.** A Claude Code session in `tmux` for agent steps, shown live in the console. Or one direct model call bound to a JSON schema: Claude through `claude -p`, Ollama or llama.cpp.
-- **Bench.** Invented cases with an answer key; a script, never a model, scores each pass. Example: an e-mail thread turned into calendar events, scored on 72 points. In production there is no score: validating the result in the console saves it as a new case.
+- **Bench.** Invented cases with an answer key, each pass scored against it. Example: an e-mail thread turned into calendar events, scored on 72 points. In production there is no score: validating the result in the console saves it as a new case.
 - **Autopilot.** Green: next step. Red, dead session or quota wall: retry, then blocked and an alert. An optional small guard model can only retry, mark red or alert.
-- **Model descent.** One lot of cases played on several models side by side; the smallest model that reaches the target is kept.
+- **Smallest model.** One batch of cases played on several models side by side, against a target score.
 - **Console.** Every pass with its input, output, time, tokens, cost and score.
 
 ## Architecture
@@ -23,15 +23,15 @@
 
 ## Status
 
-- **In service** on a private server since August 2026. It runs the web-app building pipeline and the research-watch pipeline, kept in their own private repositories.
-- **This repository** is the open-source version, published on 26/10/2026. 153 tests pass offline (`FLUX_SANS_RESEAU=1`).
+- **In service** on a private server since August 2026. It runs the web-app building pipeline, kept private; the research-watch pipeline ran on it from August to September 2026.
+- **This repository** is the open-source version, published on 26/10/2026. 147 tests pass offline (`FLUX_SANS_RESEAU=1`), 6 need the network.
 - **Language.** Code comments and console text are in French.
 
 ## Run it
 
 ```bash
 git clone https://github.com/anthohunt/flux && cd flux
-python3 -m pip install -r requirements.txt
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 cp moteurs.example.json moteurs.json && export FLUX_MOTEURS=$PWD/moteurs.json
 python3 runtime/verifier-graphes.py        # GRAPHES CONFORMES
 node runtime/server.js                     # console on http://127.0.0.1:8901

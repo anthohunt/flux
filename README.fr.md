@@ -12,26 +12,26 @@
 
 - **Graphe.** Un workflow est un fichier JSON. Chaque étape nomme son entrée, ses livrables, son modèle et son juge ; le vérificateur de graphes refuse une étape sans eux.
 - **Deux moteurs.** Une session Claude Code dans `tmux` pour les étapes d'agent, visible en direct dans la console. Ou un appel direct à un modèle, tenu par un schéma JSON : Claude par `claude -p`, Ollama ou llama.cpp.
-- **Banc.** Des cas inventés avec leur corrigé ; un script, jamais un modèle, note chaque passe. Exemple : un fil de mails changé en événements d'agenda, noté sur 72 points. En production, pas de note : valider le résultat dans la console en fait un nouveau cas.
+- **Banc.** Des cas inventés avec leur corrigé, chaque passe notée contre lui. Exemple : un fil de mails changé en événements d'agenda, noté sur 72 points. En production, pas de note : valider le résultat dans la console en fait un nouveau cas.
 - **Pilote automatique.** Vert : étape suivante. Rouge, session morte ou mur de quota : relance, puis run bloquée et alerte. Une garde facultative, un petit modèle, ne peut que relancer, marquer rouge ou alerter.
-- **Descente de modèles.** Un lot de cas joué sur plusieurs modèles côte à côte ; on garde le plus petit qui atteint la cible.
+- **Plus petit modèle.** Un lot de cas joué sur plusieurs modèles côte à côte, face à une note cible.
 - **Console.** Chaque passe avec son entrée, sa sortie, sa durée, ses jetons, son coût et sa note.
 
 ## Architecture
 
-![Architecture de flux : la console ouvre une run, le lanceur lit le graphe et briefe un moteur (session tmux ou appel api), un script juge le livrable contre le corrigé du cas, le séquenceur passe à la suite ou relance, l'état des runs alimente la console](docs/architecture.svg)
+![Architecture de flux : la console ouvre une run, le lanceur lit le graphe et briefe un moteur (session tmux ou appel API), un script juge le livrable contre le corrigé du cas, le séquenceur passe à la suite ou relance, l'état des runs alimente la console](docs/architecture.svg)
 
 ## État
 
-- **En service** sur un serveur privé depuis août 2026. Il fait tourner la chaîne de construction d'applis web et la chaîne de veille, dans leurs propres dépôts privés.
-- **Ce dépôt** est la version libre, publiée le 26/10/2026. 153 tests passent hors ligne (`FLUX_SANS_RESEAU=1`).
+- **En service** sur un serveur privé depuis août 2026. Il fait tourner la chaîne de construction d'applis web, restée privée ; la chaîne de veille y a tourné d'août à septembre 2026.
+- **Ce dépôt** est la version libre, publiée le 26/10/2026. 147 tests passent hors ligne (`FLUX_SANS_RESEAU=1`), 6 demandent le réseau.
 - **Langue.** Commentaires du code et textes de la console en français.
 
 ## Le lancer
 
 ```bash
 git clone https://github.com/anthohunt/flux && cd flux
-python3 -m pip install -r requirements.txt
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
 cp moteurs.example.json moteurs.json && export FLUX_MOTEURS=$PWD/moteurs.json
 python3 runtime/verifier-graphes.py        # GRAPHES CONFORMES
 node runtime/server.js                     # console sur http://127.0.0.1:8901
@@ -43,7 +43,7 @@ python3 tools/jouer-lot.py agenda --lot boucle --modeles sonnet,haiku --nom essa
 - Linux ou macOS, Python 3.10+, Node.js 18+, `tmux`, `git`. [Claude Code](https://code.claude.com/docs/en/overview) installé et connecté pour les modèles Claude (produit distinct, sous les conditions d'Anthropic) ; en option : Ollama ou llama.cpp pour les modèles locaux, ttyd pour le terminal en direct.
 - La console n'a pas d'authentification et écoute en local ; ne l'ouvrir au réseau (`FLUX_HOTE=0.0.0.0`) que derrière un réseau privé ou un proxy authentifié. Tous les réglages : [`.env.example`](.env.example).
 - Un workflow : `workflows/<id>.json` (contrat : `runtime/workflow.schema.json` ; squelette : `tools/nouvelle-pipeline.py <id> "<Titre>"`). Un cas de banc : `cas/<id>/` avec l'entrée et son corrigé, déclaré dans `cas/cas.json`.
-- Plus : [docs/architecture.md](docs/architecture.md) (une run, la notation, la descente de modèles) et [docs/interface.md](docs/interface.md) (brancher une chaîne sur flux), en anglais.
+- Plus : [docs/architecture.md](docs/architecture.md) (une run, la notation, le choix du plus petit modèle) et [docs/interface.md](docs/interface.md) (brancher une chaîne sur flux), en anglais.
 
 </details>
 
