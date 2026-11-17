@@ -4,9 +4,15 @@
 
 **Joue une chaîne d'agents d'IA étape par étape et note chaque étape par un script, pour garder le plus petit modèle qui fait encore le travail.**
 
-[![La console : trois modèles Claude notés sur sept mails inventés, puis un mail neuf traité en direct et gardé comme cas de banc (cliquer pour la vidéo complète)](docs/demo.gif)](https://drive.google.com/file/d/19VzTHBvsJCijUQQzpf5rDuJZf5ZfLpIr/view)
+[![La console : trois modèles Claude notés sur sept mails inventés, puis un mail neuf traité en direct et gardé comme cas de banc (version anglaise, cliquer pour la vidéo complète)](docs/demo.webp)](https://drive.google.com/file/d/19VzTHBvsJCijUQQzpf5rDuJZf5ZfLpIr/view)
 
-*Trois modèles notés sur sept mails inventés, puis un mail neuf traité en direct. [Vidéo complète (1:14)](https://drive.google.com/file/d/19VzTHBvsJCijUQQzpf5rDuJZf5ZfLpIr/view)*
+<details><summary>Version française</summary>
+
+[![La console : trois modèles Claude notés sur sept mails inventés, puis un mail neuf traité en direct et gardé comme cas de banc (cliquer pour la vidéo complète)](docs/demo.fr.webp)](https://drive.google.com/file/d/1HuDK1KE7KoOVthApxNLXLr1fzVy2xVhj/view)
+
+</details>
+
+*Trois modèles notés sur sept mails inventés, puis un mail neuf traité en direct. [Vidéo complète (1:14)](https://drive.google.com/file/d/1HuDK1KE7KoOVthApxNLXLr1fzVy2xVhj/view)*
 
 ## Ce qu'on fait avec
 

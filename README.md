@@ -4,7 +4,13 @@
 
 **Runs a pipeline of AI agents step by step and scores every step with a script, to keep the smallest model that still does the job.**
 
-[![The console: three Claude models scored on seven invented e-mails, then a new e-mail processed live and saved as a bench case (click for the full video)](docs/demo.gif)](https://drive.google.com/file/d/19VzTHBvsJCijUQQzpf5rDuJZf5ZfLpIr/view)
+[![The console: three Claude models scored on seven invented e-mails, then a new e-mail processed live and saved as a bench case (click for the full video)](docs/demo.webp)](https://drive.google.com/file/d/19VzTHBvsJCijUQQzpf5rDuJZf5ZfLpIr/view)
+
+<details><summary>French version</summary>
+
+[![La console : trois modèles Claude notés sur sept mails inventés, puis un mail neuf traité en direct et gardé comme cas de banc (cliquer pour la vidéo complète)](docs/demo.fr.webp)](https://drive.google.com/file/d/1HuDK1KE7KoOVthApxNLXLr1fzVy2xVhj/view)
+
+</details>
 
 *Three models scored on seven invented e-mails, then a new e-mail processed live. [Full video (1:14)](https://drive.google.com/file/d/19VzTHBvsJCijUQQzpf5rDuJZf5ZfLpIr/view)*
 
