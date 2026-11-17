@@ -21,6 +21,12 @@
 
 ![Architecture de flux : la console ouvre une run, le lanceur lit le graphe et briefe un moteur (session tmux ou appel API), un script juge le livrable contre le corrigé du cas, le séquenceur passe à la suite ou relance, l'état des runs alimente la console](docs/architecture.svg)
 
+<details><summary>Diagramme en français</summary>
+
+![Architecture de flux : la console ouvre une run, le lanceur lit le graphe et briefe un moteur (session tmux ou appel API), un script juge le livrable contre le corrigé du cas, le séquenceur passe à la suite ou relance, l'état des runs alimente la console](docs/architecture.fr.svg)
+
+</details>
+
 ## État
 
 - **En service** sur un serveur privé depuis août 2026. Il fait tourner la chaîne de construction d'applis web, restée privée ; la chaîne de veille y a tourné d'août à septembre 2026.

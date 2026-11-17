@@ -19,7 +19,13 @@
 
 ## Architecture
 
-![flux architecture: the console opens a run, the step runner reads the graph and briefs an engine (tmux session or API call), a script judges the deliverable against the case's answer key, the sequencer moves on or retries, the run state feeds the console](docs/architecture.en.svg)
+![flux architecture: the console opens a run, the step runner reads the graph and briefs an engine (tmux session or API call), a script judges the deliverable against the case's answer key, the sequencer moves on or retries, the run state feeds the console](docs/architecture.svg)
+
+<details><summary>French version</summary>
+
+![Architecture de flux : la console ouvre une run, le lanceur lit le graphe et briefe un moteur (session tmux ou appel API), un script juge le livrable contre le corrigé du cas, le séquenceur passe à la suite ou relance, l'état des runs alimente la console](docs/architecture.fr.svg)
+
+</details>
 
 ## Status
 
